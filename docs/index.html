@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kinela Mundialista - Cuartos</title>
+    <style>
+      :root {
+        --bg: #f7f3eb;
+        --panel: #ffffff;
+        --ink: #16202b;
+        --muted: #617080;
+        --line: #ded6c8;
+        --green: #0f766e;
+        --gold: #b45309;
+        --navy: #24313f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      header {
+        border-bottom: 1px solid var(--line);
+        background: #fffaf1;
+      }
+
+      .wrap {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .logo {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--green);
+        color: white;
+        font-weight: 700;
+      }
+
+      .brand strong {
+        display: block;
+        font-size: 18px;
+      }
+
+      .brand span {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      main {
+        padding: 28px 0 44px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.35fr 1fr;
+        gap: 22px;
+        align-items: end;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 24px;
+      }
+
+      .eyebrow {
+        color: var(--gold);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 10px 0 0;
+        font-size: clamp(30px, 4vw, 46px);
+        line-height: 1.05;
+      }
+
+      .status-grid,
+      .metrics,
+      .matches {
+        display: grid;
+        gap: 14px;
+      }
+
+      .status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-top: 24px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 16px;
+      }
+
+      .label {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .value {
+        margin-top: 10px;
+        font-size: 19px;
+        font-weight: 700;
+      }
+
+      .detail {
+        margin-top: 6px;
+        color: var(--gold);
+        font-size: 14px;
+      }
+
+      section {
+        padding-top: 32px;
+      }
+
+      h2 {
+        margin: 0 0 6px;
+        font-size: 24px;
+      }
+
+      .hint {
+        margin: 0 0 16px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .table-box {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+      }
+
+      table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      th {
+        background: var(--navy);
+        color: white;
+        text-align: left;
+      }
+
+      th,
+      td {
+        padding: 13px 12px;
+        border-bottom: 1px solid #ece6db;
+      }
+
+      td.num,
+      th.num {
+        text-align: right;
+      }
+
+      td.points {
+        color: var(--green);
+        font-weight: 700;
+      }
+
+      .matches {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .match-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .match-title h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .pill {
+        align-self: start;
+        border-radius: 999px;
+        background: #e0f2f1;
+        color: var(--green);
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .stat-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .mini strong {
+        display: block;
+        font-size: 18px;
+      }
+
+      .common {
+        margin-top: 14px;
+        border-radius: 8px;
+        background: #f8f6f1;
+        padding: 12px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .participant-tools {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      select {
+        width: min(320px, 100%);
+        height: 40px;
+        border: 1px solid #b9ad9d;
+        border-radius: 8px;
+        background: white;
+        padding: 0 10px;
+        color: var(--ink);
+      }
+
+      .error {
+        margin-top: 18px;
+        border: 1px solid #f2b8b5;
+        border-radius: 8px;
+        background: #fff0ef;
+        color: #8c1d18;
+        padding: 14px;
+        display: none;
+      }
+
+      @media (max-width: 850px) {
+        .top,
+        .hero,
+        .participant-tools {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .hero,
+        .status-grid,
+        .metrics,
+        .matches {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap top">
+        <div class="brand">
+          <div class="logo">K</div>
+          <div>
+            <strong>Kinela Mundialista</strong>
+            <span>Cuartos en vivo</span>
+          </div>
+        </div>
+        <div class="label" id="sourceLabel">Google Sheets</div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <div class="hero">
+        <div>
+          <div class="eyebrow">Cuartos de final</div>
+          <h1>Kinela Mundialista - Cuartos de final</h1>
+        </div>
+        <div class="status-grid">
+          <div class="card">
+            <div class="label">Ultima actualizacion</div>
+            <div class="value" id="lastUpdated">Cargando...</div>
+          </div>
+          <div class="card">
+            <div class="label">Estado de fase</div>
+            <div class="value" id="phaseStatus">Abierta</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="error" id="errorBox"></div>
+
+      <div class="metrics">
+        <div class="card">
+          <div class="label">Lider</div>
+          <div class="value" id="metricLeader">N/D</div>
+          <div class="detail" id="metricLeaderDetail">0 pts</div>
+        </div>
+        <div class="card">
+          <div class="label">Top marcadores</div>
+          <div class="value" id="metricExact">N/D</div>
+          <div class="detail" id="metricExactDetail">0 exactos</div>
+        </div>
+        <div class="card">
+          <div class="label">Clasificados</div>
+          <div class="value" id="metricQualifier">N/D</div>
+          <div class="detail" id="metricQualifierDetail">0 aciertos</div>
+        </div>
+        <div class="card">
+          <div class="label">Partido mas puntuado</div>
+          <div class="value" id="metricMatch">N/D</div>
+          <div class="detail" id="metricMatchDetail">0 pts repartidos</div>
+        </div>
+      </div>
+
+      <section>
+        <h2>Tabla de posiciones</h2>
+        <p class="hint">Desempates: exactos, clasificados, vias, respuestas completas y nombre.</p>
+        <div class="table-box">
+          <table>
+            <thead>
+              <tr>
+                <th>Puesto</th>
+                <th>Participante</th>
+                <th class="num">Puntos</th>
+                <th class="num">Exactos</th>
+                <th class="num">Clasificados</th>
+                <th class="num">Vias</th>
+                <th class="num">Pendientes</th>
+              </tr>
+            </thead>
+            <tbody id="standingsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>Partidos</h2>
+        <p class="hint">Resultados oficiales y distribucion de apuestas por partido.</p>
+        <div class="matches" id="matchesGrid"></div>
+      </section>
+
+      <section>
+        <div class="participant-tools">
+          <div>
+            <h2>Vista por participante</h2>
+            <p class="hint">Detalle de apuestas y puntos por cada partido.</p>
+          </div>
+          <select id="participantSelect"></select>
+        </div>
+        <div class="table-box">
+          <table>
+            <thead>
+              <tr>
+                <th>Partido</th>
+                <th>Apuesta</th>
+                <th>Clasificado</th>
+                <th>Via</th>
+                <th>Resultado</th>
+                <th class="num">Pts</th>
+              </tr>
+            </thead>
+            <tbody id="participantBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const SHEET_ID = "1OkowhSrhW751BF8ioQmtRRJjmgXetYr3IDL8LUzbocg";
+      const PARTICIPANTS = [
+        "Freddy", "Gabriela", "Jean", "Juan", "Jesus", "Diego", "Aldo", "Javier", "Gino", "Manuel", "Jorge",
+        "Daniel", "Arthur", "Jose Luis", "Marcelo", "Anny", "Moises", "Alex", "Omar", "Fernando", "Diana", "Oscar"
+      ];
+      const DISPLAY_NAMES = {
+        Jesus: "Jesus",
+        "Jose Luis": "Jose Luis",
+        Moises: "Moises",
+        Oscar: "Oscar"
+      };
+      const ALIASES = {
+        "gabriela orrillo": "Gabriela",
+        "daniel fernando vega meza": "Daniel",
+        "diego saloma": "Diego",
+        "jesus arias ochoa": "Jesus",
+        "anny pacheco": "Anny",
+        "freddy pacheco": "Freddy",
+        "alex": "Alex",
+        "alex montalvo": "Alex"
+      };
+      const MATCHES = [
+        { id: "QF1", order: 1, teamA: "Francia", teamB: "Marruecos", q: 3, m: 4, a: 5, b: 6 },
+        { id: "QF2", order: 2, teamA: "Espana", teamB: "Belgica", q: 7, m: 8, a: 9, b: 10 },
+        { id: "QF3", order: 3, teamA: "Noruega", teamB: "Inglaterra", q: 11, m: 12, a: 13, b: 14 },
+        { id: "QF4", order: 4, teamA: "Argentina", teamB: "Suiza", q: 15, m: 16, a: 17, b: 18 }
+      ];
+      const POINTS = {
+        result90: 5,
+        qualifier: 3,
+        method: 2,
+        exact: 4,
+        diff: 2,
+        goalsA: 1,
+        goalsB: 1
+      };
+      let dashboard = null;
+
+      function normalize(value) {
+        return String(value || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/"/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+          .toLowerCase();
+      }
+
+      function displayName(name) {
+        return DISPLAY_NAMES[name] || name;
+      }
+
+      function canonicalParticipant(value) {
+        const n = normalize(value);
+        if (ALIASES[n]) return ALIASES[n];
+        const exact = PARTICIPANTS.find((name) => normalize(name) === n);
+        if (exact) return exact;
+        const contained = PARTICIPANTS.find((name) => n.split(" ").includes(normalize(name)) || n.includes(normalize(name)));
+        return contained || String(value || "").trim();
+      }
+
+      function canonicalTeam(value, teamA, teamB) {
+        const n = normalize(value);
+        if (n.includes(normalize(teamA))) return teamA;
+        if (n.includes(normalize(teamB))) return teamB;
+        return String(value || "").trim();
+      }
+
+      function normalizeMethod(value) {
+        const n = normalize(value);
+        if (n.includes("penal")) return "Penales";
+        if (n.includes("suplement") || n.includes("prorroga") || n.includes("alargue")) return "Suplementario";
+        return "90 minutos";
+      }
+
+      function parseScore(value) {
+        const parsed = parseInt(String(value || "").replace(/[^\d-]/g, ""), 10);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+
+      function parseDate(value, fallbackIndex) {
+        const match = String(value || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2}):(\d{2})$/);
+        if (!match) return new Date(Date.UTC(2026, 6, 8, 12, fallbackIndex, 0));
+        const [, day, month, year, hour, minute, second] = match;
+        return new Date(`${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${hour.padStart(2, "0")}:${minute}:${second}-05:00`);
+      }
+
+      function tableToRows(table) {
+        return (table.rows || []).map((row) => (row.c || []).map((cell) => (cell && cell.v != null ? cell.v : "")));
+      }
+
+      function loadGoogleTable(params, handlerName) {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          const timeout = window.setTimeout(() => {
+            cleanup();
+            reject(new Error("Tiempo agotado leyendo Google Sheets"));
+          }, 20000);
+
+          function cleanup() {
+            window.clearTimeout(timeout);
+            delete window[handlerName];
+            script.remove();
+          }
+
+          window[handlerName] = (payload) => {
+            cleanup();
+            if (payload.status === "error") reject(new Error(payload.errors && payload.errors[0] ? payload.errors[0].detailed_message : "Error de Google Sheets"));
+            else resolve(payload.table);
+          };
+
+          const query = new URLSearchParams(params);
+          query.set("tqx", `out:json;responseHandler:${handlerName}`);
+          query.set("_", Date.now().toString());
+          script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?${query.toString()}`;
+          script.onerror = () => {
+            cleanup();
+            reject(new Error("No se pudo cargar Google Sheets"));
+          };
+          document.head.appendChild(script);
+        });
+      }
+
+      function outcome(goalsA, goalsB) {
+        if (goalsA > goalsB) return "A";
+        if (goalsB > goalsA) return "B";
+        return "E";
+      }
+
+      function regulatoryOutcome(method, goalsA, goalsB) {
+        return method === "90 minutos" ? outcome(goalsA, goalsB) : "E";
+      }
+
+      function scorePrediction(prediction, result) {
+        if (!result || !result.confirmed) return emptyScore();
+        const score = emptyScore();
+        if (regulatoryOutcome(prediction.method, prediction.goalsA, prediction.goalsB) === regulatoryOutcome(result.method, result.goalsA, result.goalsB)) score.result90 = POINTS.result90;
+        if (prediction.qualifier === result.qualifier) score.qualifier = POINTS.qualifier;
+        if (prediction.method === result.method) score.method = POINTS.method;
+
+        const scoreCriteria =
+          prediction.method === result.method &&
+          prediction.method !== "Suplementario" &&
+          !(prediction.method === "Penales" && prediction.goalsA !== prediction.goalsB);
+
+        if (scoreCriteria && prediction.goalsA === result.goalsA && prediction.goalsB === result.goalsB) score.exact = POINTS.exact;
+        if (scoreCriteria && prediction.goalsA - prediction.goalsB === result.goalsA - result.goalsB) score.diff = POINTS.diff;
+        if (scoreCriteria && prediction.goalsA === result.goalsA) score.goalsA = POINTS.goalsA;
+        if (scoreCriteria && prediction.goalsB === result.goalsB) score.goalsB = POINTS.goalsB;
+        score.total = score.result90 + score.qualifier + score.method + score.exact + score.diff + score.goalsA + score.goalsB;
+        return score;
+      }
+
+      function emptyScore() {
+        return { result90: 0, qualifier: 0, method: 0, exact: 0, diff: 0, goalsA: 0, goalsB: 0, total: 0 };
+      }
+
+      function latestPredictions(rows) {
+        const latest = new Map();
+        rows.slice(1).forEach((row, index) => {
+          const name = canonicalParticipant(row[2]);
+          if (!name) return;
+          const submitted = parseDate(row[0], index);
+          const existing = latest.get(name);
+          if (!existing || submitted >= existing.submitted) latest.set(name, { row, submitted });
+        });
+
+        const byParticipant = new Map();
+        latest.forEach((entry, name) => {
+          byParticipant.set(name, MATCHES.map((match) => ({
+            matchId: match.id,
+            teamA: match.teamA,
+            teamB: match.teamB,
+            goalsA: parseScore(entry.row[match.a]),
+            goalsB: parseScore(entry.row[match.b]),
+            qualifier: canonicalTeam(entry.row[match.q], match.teamA, match.teamB),
+            method: normalizeMethod(entry.row[match.m])
+          })));
+        });
+        return byParticipant;
+      }
+
+      function parseResults(rows) {
+        if (rows.length < 2) return new Map();
+        const headers = rows[0].map(normalize);
+        const partido = headers.findIndex((h) => ["partido", "id"].includes(h));
+        const marcadorA = headers.findIndex((h) => ["marcador a", "goles a", "score a"].includes(h));
+        const marcadorB = headers.findIndex((h) => ["marcador b", "goles b", "score b"].includes(h));
+        const metodo = headers.findIndex((h) => ["metodo oficial", "metodo"].includes(h));
+        const clasificado = headers.findIndex((h) => ["clasificado oficial", "clasificado"].includes(h));
+        const estado = headers.findIndex((h) => ["estado", "status"].includes(h));
+        if ([partido, marcadorA, marcadorB, metodo, clasificado].some((i) => i < 0)) return new Map();
+
+        const results = new Map();
+        rows.slice(1).forEach((row) => {
+          const match = MATCHES.find((item) => normalize(row[partido]) === normalize(item.id) || (normalize(row[partido]).includes(normalize(item.teamA)) && normalize(row[partido]).includes(normalize(item.teamB))));
+          if (!match) return;
+          const status = normalize(row[estado] || "finalizado");
+          results.set(match.id, {
+            matchId: match.id,
+            goalsA: parseScore(row[marcadorA]),
+            goalsB: parseScore(row[marcadorB]),
+            method: normalizeMethod(row[metodo]),
+            qualifier: canonicalTeam(row[clasificado], match.teamA, match.teamB),
+            confirmed: ["finalizado", "confirmado", "ok", "finished", "confirmed"].includes(status)
+          });
+        });
+        return results;
+      }
+
+      function buildDashboard(predictionsByParticipant, results) {
+        const standings = PARTICIPANTS.map((name) => {
+          const predictions = predictionsByParticipant.get(name) || [];
+          const row = { name, points: 0, exact: 0, qualifiers: 0, methods: 0, withPoints: 0, unanswered: MATCHES.length - predictions.length };
+          predictions.forEach((prediction) => {
+            const score = scorePrediction(prediction, results.get(prediction.matchId));
+            row.points += score.total;
+            row.exact += score.exact > 0 ? 1 : 0;
+            row.qualifiers += score.qualifier > 0 ? 1 : 0;
+            row.methods += score.method > 0 ? 1 : 0;
+            row.withPoints += score.total > 0 ? 1 : 0;
+          });
+          return row;
+        }).sort((a, b) => b.points - a.points || b.exact - a.exact || b.qualifiers - a.qualifiers || b.methods - a.methods || a.unanswered - b.unanswered || a.name.localeCompare(b.name));
+
+        const matchInsights = MATCHES.map((match) => {
+          const predictions = Array.from(predictionsByParticipant.entries()).flatMap(([name, rows]) => rows.filter((prediction) => prediction.matchId === match.id).map((prediction) => ({ name, prediction })));
+          const result = results.get(match.id);
+          let picksA = 0;
+          let picksB = 0;
+          let picksDraw = 0;
+          let points = 0;
+          const groups = new Map();
+          const exactScorers = [];
+
+          predictions.forEach(({ name, prediction }) => {
+            const pick = outcome(prediction.goalsA, prediction.goalsB);
+            if (pick === "A") picksA += 1;
+            if (pick === "B") picksB += 1;
+            if (pick === "E") picksDraw += 1;
+            const key = `${prediction.goalsA}-${prediction.goalsB} / ${displayName(prediction.qualifier)} / ${prediction.method}`;
+            groups.set(key, (groups.get(key) || 0) + 1);
+            const score = scorePrediction(prediction, result);
+            points += score.total;
+            if (score.exact > 0) exactScorers.push(displayName(name));
+          });
+
+          const common = Array.from(groups.entries()).sort((a, b) => b[1] - a[1])[0];
+          return {
+            ...match,
+            result,
+            picksA,
+            picksB,
+            picksDraw,
+            points,
+            exactScorers,
+            common: common ? common[0] : "Sin apuestas"
+          };
+        });
+
+        return { standings, matchInsights, predictionsByParticipant, results };
+      }
+
+      function resultLabel(match) {
+        if (!match.result || !match.result.confirmed) return "Pendiente";
+        return `${match.result.goalsA}-${match.result.goalsB}`;
+      }
+
+      function render(data) {
+        dashboard = data;
+        const now = new Date();
+        document.getElementById("lastUpdated").textContent = new Intl.DateTimeFormat("es-PE", { dateStyle: "medium", timeStyle: "short" }).format(now);
+        document.getElementById("phaseStatus").textContent = now <= new Date("2026-07-09T10:00:00-05:00") ? "Abierta" : (data.matchInsights.some((m) => m.result && m.result.confirmed) ? "En juego" : "Cerrada");
+
+        const leader = data.standings[0];
+        document.getElementById("metricLeader").textContent = displayName(leader.name);
+        document.getElementById("metricLeaderDetail").textContent = `${leader.points} pts`;
+        const exact = data.standings.find((row) => row.exact > 0);
+        document.getElementById("metricExact").textContent = exact ? displayName(exact.name) : "N/D";
+        document.getElementById("metricExactDetail").textContent = `${exact ? exact.exact : 0} exactos`;
+        const qualifier = data.standings.find((row) => row.qualifiers > 0);
+        document.getElementById("metricQualifier").textContent = qualifier ? displayName(qualifier.name) : "N/D";
+        document.getElementById("metricQualifierDetail").textContent = `${qualifier ? qualifier.qualifiers : 0} aciertos`;
+        const bestMatch = data.matchInsights.slice().sort((a, b) => b.points - a.points)[0];
+        document.getElementById("metricMatch").textContent = bestMatch ? `${displayName(bestMatch.teamA)} vs ${displayName(bestMatch.teamB)}` : "N/D";
+        document.getElementById("metricMatchDetail").textContent = `${bestMatch ? bestMatch.points : 0} pts repartidos`;
+
+        document.getElementById("standingsBody").innerHTML = data.standings.map((row, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${displayName(row.name)}</td>
+            <td class="num points">${row.points}</td>
+            <td class="num">${row.exact}</td>
+            <td class="num">${row.qualifiers}</td>
+            <td class="num">${row.methods}</td>
+            <td class="num">${row.unanswered}</td>
+          </tr>
+        `).join("");
+
+        document.getElementById("matchesGrid").innerHTML = data.matchInsights.map((match) => `
+          <article class="card">
+            <div class="match-title">
+              <div>
+                <h3>${displayName(match.teamA)} vs ${displayName(match.teamB)}</h3>
+                <div class="label">${resultLabel(match)} - ${match.result && match.result.confirmed ? displayName(match.result.qualifier) : "Pendiente"} - ${match.result && match.result.confirmed ? match.result.method : "Pendiente"}</div>
+              </div>
+              <span class="pill">${match.result && match.result.confirmed ? "Finalizado" : "Pendiente"}</span>
+            </div>
+            <div class="stat-row">
+              <div class="mini"><span class="label">Equipo A</span><strong>${match.picksA}</strong></div>
+              <div class="mini"><span class="label">Equipo B</span><strong>${match.picksB}</strong></div>
+              <div class="mini"><span class="label">Empate</span><strong>${match.picksDraw}</strong></div>
+              <div class="mini"><span class="label">Puntos</span><strong>${match.points}</strong></div>
+            </div>
+            <div class="common">Prediccion mas comun: ${match.common}</div>
+            <p class="hint">Exactos: ${match.exactScorers.length ? match.exactScorers.join(", ") : "Pendiente"}</p>
+          </article>
+        `).join("");
+
+        const select = document.getElementById("participantSelect");
+        const current = select.value || data.standings[0].name;
+        select.innerHTML = data.standings.map((row) => `<option value="${row.name}">${displayName(row.name)}</option>`).join("");
+        select.value = data.standings.some((row) => row.name === current) ? current : data.standings[0].name;
+        renderParticipant(select.value);
+      }
+
+      function renderParticipant(name) {
+        if (!dashboard) return;
+        const predictions = dashboard.predictionsByParticipant.get(name) || [];
+        document.getElementById("participantBody").innerHTML = MATCHES.map((match) => {
+          const prediction = predictions.find((item) => item.matchId === match.id);
+          const result = dashboard.results.get(match.id);
+          const score = prediction ? scorePrediction(prediction, result) : emptyScore();
+          return `
+            <tr>
+              <td>${displayName(match.teamA)} vs ${displayName(match.teamB)}</td>
+              <td>${prediction ? `${prediction.goalsA}-${prediction.goalsB}` : "Sin envio"}</td>
+              <td>${prediction ? displayName(prediction.qualifier) : "Sin envio"}</td>
+              <td>${prediction ? prediction.method : "Sin envio"}</td>
+              <td>${result && result.confirmed ? `${result.goalsA}-${result.goalsB}` : "Pendiente"}</td>
+              <td class="num points">${score.total}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      async function refresh() {
+        const errorBox = document.getElementById("errorBox");
+        try {
+          errorBox.style.display = "none";
+          const responsesTable = await loadGoogleTable({ gid: "0" }, "__kinelaResponses");
+          let resultsRows = [];
+          try {
+            const resultsTable = await loadGoogleTable({ sheet: "RESULTADOS" }, "__kinelaResults");
+            resultsRows = tableToRows(resultsTable);
+          } catch (error) {
+            resultsRows = [];
+          }
+          const responsesRows = tableToRows(responsesTable);
+          const predictions = latestPredictions(responsesRows);
+          const results = parseResults(resultsRows);
+          render(buildDashboard(predictions, results));
+        } catch (error) {
+          errorBox.textContent = `No se pudo actualizar la kinela: ${error.message}`;
+          errorBox.style.display = "block";
+        }
+      }
+
+      document.getElementById("participantSelect").addEventListener("change", (event) => {
+        renderParticipant(event.target.value);
+      });
+
+      refresh();
+      window.setInterval(refresh, 60000);
+    </script>
+  </body>
+</html>
