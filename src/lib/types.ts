@@ -142,6 +142,8 @@ export interface StandingRow {
   participant_id: string;
   participant_name: string;
   points: number;
+  base_points?: number;
+  phase_points?: number;
   exact_scores: number;
   qualifiers: number;
   methods: number;
@@ -199,4 +201,10 @@ export interface DashboardData {
   matchInsights: MatchInsight[];
   participantViews: ParticipantView[];
   metrics: DashboardMetrics;
+  previousMatches?: Array<{
+    match_id: string;
+    label: string;
+    qualifier: string;
+    method: PredictionMethod;
+  }>;
 }

@@ -102,6 +102,42 @@ const matchConfigs = [
   },
 ];
 
+const previousStandings: Record<string, { points: number; exact: number; qualifiers: number; methods: number }> = {
+  Jean: { points: 75, exact: 1, qualifiers: 6, methods: 7 },
+  Freddy: { points: 70, exact: 0, qualifiers: 6, methods: 7 },
+  Jorge: { points: 61, exact: 1, qualifiers: 5, methods: 6 },
+  Gabriela: { points: 61, exact: 0, qualifiers: 7, methods: 5 },
+  Jesús: { points: 59, exact: 0, qualifiers: 6, methods: 6 },
+  Anny: { points: 59, exact: 0, qualifiers: 5, methods: 6 },
+  Diego: { points: 56, exact: 0, qualifiers: 6, methods: 5 },
+  Aldo: { points: 50, exact: 0, qualifiers: 4, methods: 6 },
+  Alex: { points: 49, exact: 0, qualifiers: 7, methods: 3 },
+  Javier: { points: 44, exact: 0, qualifiers: 4, methods: 5 },
+  Gino: { points: 42, exact: 0, qualifiers: 6, methods: 4 },
+  Manuel: { points: 39, exact: 1, qualifiers: 5, methods: 2 },
+  Juan: { points: 36, exact: 0, qualifiers: 5, methods: 3 },
+  Arthur: { points: 35, exact: 0, qualifiers: 5, methods: 4 },
+  Óscar: { points: 32, exact: 0, qualifiers: 5, methods: 2 },
+  Daniel: { points: 32, exact: 0, qualifiers: 2, methods: 3 },
+  Moisés: { points: 27, exact: 0, qualifiers: 5, methods: 1 },
+  Fernando: { points: 25, exact: 0, qualifiers: 3, methods: 3 },
+  Diana: { points: 25, exact: 0, qualifiers: 3, methods: 2 },
+  "José Luis": { points: 0, exact: 0, qualifiers: 0, methods: 0 },
+  Marcelo: { points: 0, exact: 0, qualifiers: 0, methods: 0 },
+  Omar: { points: 0, exact: 0, qualifiers: 0, methods: 0 },
+};
+
+const previousMatches = [
+  { match_id: "O1", label: "Canadá 0-3 Marruecos", qualifier: "Marruecos", method: "90 minutos" as const },
+  { match_id: "O2", label: "Paraguay 0-1 Francia", qualifier: "Francia", method: "90 minutos" as const },
+  { match_id: "O3", label: "Brasil 1-2 Noruega", qualifier: "Noruega", method: "90 minutos" as const },
+  { match_id: "O4", label: "México 2-3 Inglaterra", qualifier: "Inglaterra", method: "90 minutos" as const },
+  { match_id: "O5", label: "Estados Unidos 1-4 Bélgica", qualifier: "Bélgica", method: "90 minutos" as const },
+  { match_id: "O6", label: "Portugal 0-1 España", qualifier: "España", method: "90 minutos" as const },
+  { match_id: "O7", label: "Suiza 0-0 Colombia", qualifier: "Suiza", method: "Penales" as const },
+  { match_id: "O8", label: "Argentina 3-2 Egipto", qualifier: "Argentina", method: "90 minutos" as const },
+];
+
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
@@ -411,9 +447,54 @@ export async function buildGoogleSheetDashboardData() {
     syncLogs: [],
   };
 
+  const dashboard = buildDashboardData(state);
+
+  dashboard.standings.forEach((row) => {
+    const base = previousStandings[row.participant_name] ?? {
+      points: 0,
+      exact: 0,
+      qualifiers: 0,
+      methods: 0,
+    };
+    row.base_points = base.points;
+    row.phase_points = row.points;
+    row.points += base.points;
+    row.exact_scores += base.exact;
+    row.qualifiers += base.qualifiers;
+    row.methods += base.methods;
+  });
+
+  dashboard.standings.sort((a, b) => {
+    return (
+      b.points - a.points ||
+      b.exact_scores - a.exact_scores ||
+      b.qualifiers - a.qualifiers ||
+      b.methods - a.methods ||
+      a.unanswered - b.unanswered ||
+      a.participant_name.localeCompare(b.participant_name)
+    );
+  });
+
+  dashboard.standings.forEach((row, index) => {
+    row.rank = index + 1;
+  });
+
+  dashboard.metrics.top_exact_scores = dashboard.standings
+    .filter((row) => row.exact_scores > 0)
+    .slice()
+    .sort((a, b) => b.exact_scores - a.exact_scores || b.points - a.points)
+    .slice(0, 5);
+  dashboard.metrics.top_qualifiers = dashboard.standings
+    .filter((row) => row.qualifiers > 0)
+    .slice()
+    .sort((a, b) => b.qualifiers - a.qualifiers || b.points - a.points)
+    .slice(0, 5);
+  dashboard.metrics.biggest_riser = dashboard.standings[0];
+
   return {
-    ...buildDashboardData(state),
+    ...dashboard,
     title: "Kinela Mundialista - Cuartos de final",
     last_updated: new Date().toISOString(),
+    previousMatches,
   };
 }

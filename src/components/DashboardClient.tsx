@@ -104,12 +104,14 @@ export function DashboardClient({ data }: { data: DashboardData }) {
           </div>
         </div>
         <div className="overflow-x-auto rounded-md border border-[#d8d0c1] bg-white">
-          <table className="min-w-[760px] text-sm">
-            <thead className="bg-[#24313f] text-left text-white">
+          <table className="min-w-[980px] text-sm">
+          <thead className="bg-[#24313f] text-left text-white">
               <tr>
                 <th className="px-3 py-3">Puesto</th>
                 <th className="px-3 py-3">Participante</th>
-                <th className="px-3 py-3 text-right">Puntos</th>
+                <th className="px-3 py-3 text-right">Total</th>
+                <th className="px-3 py-3 text-right">Base 8vos</th>
+                <th className="px-3 py-3 text-right">Cuartos</th>
                 <th className="px-3 py-3 text-right">Exactos</th>
                 <th className="px-3 py-3 text-right">Clasificados</th>
                 <th className="px-3 py-3 text-right">Vías</th>
@@ -122,6 +124,8 @@ export function DashboardClient({ data }: { data: DashboardData }) {
                   <td className="px-3 py-3 font-semibold">{row.rank}</td>
                   <td className="px-3 py-3">{row.participant_name}</td>
                   <td className="px-3 py-3 text-right font-semibold text-[#0f766e]">{row.points}</td>
+                  <td className="px-3 py-3 text-right">{row.base_points ?? 0}</td>
+                  <td className="px-3 py-3 text-right">{row.phase_points ?? row.points}</td>
                   <td className="px-3 py-3 text-right">{row.exact_scores}</td>
                   <td className="px-3 py-3 text-right">{row.qualifiers}</td>
                   <td className="px-3 py-3 text-right">{row.methods}</td>
@@ -171,6 +175,27 @@ export function DashboardClient({ data }: { data: DashboardData }) {
           ))}
         </div>
       </section>
+
+      {data.previousMatches?.length ? (
+        <section className="border-t border-[#d8d0c1] py-6">
+          <h2 className="mb-1 text-xl font-semibold text-[#151c25]">Antecedente: octavos de final</h2>
+          <p className="mb-4 text-sm text-[#5c6570]">
+            Resultados ya cerrados que forman la base acumulada de la tabla.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {data.previousMatches.map((match) => (
+              <article key={match.match_id} className="rounded-md border border-[#d8d0c1] bg-white p-4">
+                <p className="text-sm font-semibold text-[#151c25]">
+                  {match.match_id} · {match.label}
+                </p>
+                <p className="mt-2 text-sm text-[#5c6570]">
+                  Clasifica {match.qualifier} · {match.method}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="border-t border-[#d8d0c1] py-6">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

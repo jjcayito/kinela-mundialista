@@ -166,7 +166,7 @@
 
       table {
         width: 100%;
-        min-width: 760px;
+        min-width: 920px;
         border-collapse: collapse;
         font-size: 14px;
       }
@@ -219,11 +219,31 @@
         white-space: nowrap;
       }
 
-      .stat-row {
+      .stat-row,
+      .previous-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 10px;
+      }
+
+      .stat-row {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         margin-top: 16px;
+      }
+
+      .previous-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .previous-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        padding: 14px;
+      }
+
+      .previous-card strong {
+        display: block;
+        margin-bottom: 6px;
       }
 
       .mini strong {
@@ -279,7 +299,8 @@
         .hero,
         .status-grid,
         .metrics,
-        .matches {
+        .matches,
+        .previous-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -351,7 +372,9 @@
               <tr>
                 <th>Puesto</th>
                 <th>Participante</th>
-                <th class="num">Puntos</th>
+                <th class="num">Total</th>
+                <th class="num">Base 8vos</th>
+                <th class="num">Cuartos</th>
                 <th class="num">Exactos</th>
                 <th class="num">Clasificados</th>
                 <th class="num">Vias</th>
@@ -367,6 +390,12 @@
         <h2>Partidos</h2>
         <p class="hint">Resultados oficiales y distribucion de apuestas por partido.</p>
         <div class="matches" id="matchesGrid"></div>
+      </section>
+
+      <section>
+        <h2>Antecedente: octavos de final</h2>
+        <p class="hint">Estos resultados ya estan cerrados y forman la base acumulada de la tabla.</p>
+        <div class="previous-grid" id="previousMatchesGrid"></div>
       </section>
 
       <section>
@@ -432,6 +461,40 @@
         goalsA: 1,
         goalsB: 1
       };
+      const BASELINE = {
+        Jean: { points: 75, exact: 1, qualifiers: 6, methods: 7 },
+        Freddy: { points: 70, exact: 0, qualifiers: 6, methods: 7 },
+        Jorge: { points: 61, exact: 1, qualifiers: 5, methods: 6 },
+        Gabriela: { points: 61, exact: 0, qualifiers: 7, methods: 5 },
+        Jesus: { points: 59, exact: 0, qualifiers: 6, methods: 6 },
+        Anny: { points: 59, exact: 0, qualifiers: 5, methods: 6 },
+        Diego: { points: 56, exact: 0, qualifiers: 6, methods: 5 },
+        Aldo: { points: 50, exact: 0, qualifiers: 4, methods: 6 },
+        Alex: { points: 49, exact: 0, qualifiers: 7, methods: 3 },
+        Javier: { points: 44, exact: 0, qualifiers: 4, methods: 5 },
+        Gino: { points: 42, exact: 0, qualifiers: 6, methods: 4 },
+        Manuel: { points: 39, exact: 1, qualifiers: 5, methods: 2 },
+        Juan: { points: 36, exact: 0, qualifiers: 5, methods: 3 },
+        Arthur: { points: 35, exact: 0, qualifiers: 5, methods: 4 },
+        Oscar: { points: 32, exact: 0, qualifiers: 5, methods: 2 },
+        Daniel: { points: 32, exact: 0, qualifiers: 2, methods: 3 },
+        Moises: { points: 27, exact: 0, qualifiers: 5, methods: 1 },
+        Fernando: { points: 25, exact: 0, qualifiers: 3, methods: 3 },
+        Diana: { points: 25, exact: 0, qualifiers: 3, methods: 2 },
+        "Jose Luis": { points: 0, exact: 0, qualifiers: 0, methods: 0 },
+        Marcelo: { points: 0, exact: 0, qualifiers: 0, methods: 0 },
+        Omar: { points: 0, exact: 0, qualifiers: 0, methods: 0 }
+      };
+      const PREVIOUS_MATCHES = [
+        { id: "O1", label: "Canada 0-3 Marruecos", qualifier: "Marruecos", method: "90 minutos" },
+        { id: "O2", label: "Paraguay 0-1 Francia", qualifier: "Francia", method: "90 minutos" },
+        { id: "O3", label: "Brasil 1-2 Noruega", qualifier: "Noruega", method: "90 minutos" },
+        { id: "O4", label: "Mexico 2-3 Inglaterra", qualifier: "Inglaterra", method: "90 minutos" },
+        { id: "O5", label: "Estados Unidos 1-4 Belgica", qualifier: "Belgica", method: "90 minutos" },
+        { id: "O6", label: "Portugal 0-1 Espana", qualifier: "Espana", method: "90 minutos" },
+        { id: "O7", label: "Suiza 0-0 Colombia", qualifier: "Suiza", method: "Penales" },
+        { id: "O8", label: "Argentina 3-2 Egipto", qualifier: "Argentina", method: "90 minutos" }
+      ];
       let dashboard = null;
 
       function normalize(value) {
@@ -609,9 +672,21 @@
       function buildDashboard(predictionsByParticipant, results) {
         const standings = PARTICIPANTS.map((name) => {
           const predictions = predictionsByParticipant.get(name) || [];
-          const row = { name, points: 0, exact: 0, qualifiers: 0, methods: 0, withPoints: 0, unanswered: MATCHES.length - predictions.length };
+          const base = BASELINE[name] || { points: 0, exact: 0, qualifiers: 0, methods: 0 };
+          const row = {
+            name,
+            basePoints: base.points,
+            qfPoints: 0,
+            points: base.points,
+            exact: base.exact,
+            qualifiers: base.qualifiers,
+            methods: base.methods,
+            withPoints: 0,
+            unanswered: MATCHES.length - predictions.length
+          };
           predictions.forEach((prediction) => {
             const score = scorePrediction(prediction, results.get(prediction.matchId));
+            row.qfPoints += score.total;
             row.points += score.total;
             row.exact += score.exact > 0 ? 1 : 0;
             row.qualifiers += score.qualifier > 0 ? 1 : 0;
@@ -672,7 +747,7 @@
 
         const leader = data.standings[0];
         document.getElementById("metricLeader").textContent = displayName(leader.name);
-        document.getElementById("metricLeaderDetail").textContent = `${leader.points} pts`;
+        document.getElementById("metricLeaderDetail").textContent = `${leader.points} pts (${leader.basePoints} base + ${leader.qfPoints} cuartos)`;
         const exact = data.standings.find((row) => row.exact > 0);
         document.getElementById("metricExact").textContent = exact ? displayName(exact.name) : "N/D";
         document.getElementById("metricExactDetail").textContent = `${exact ? exact.exact : 0} exactos`;
@@ -688,6 +763,8 @@
             <td>${index + 1}</td>
             <td>${displayName(row.name)}</td>
             <td class="num points">${row.points}</td>
+            <td class="num">${row.basePoints}</td>
+            <td class="num">${row.qfPoints}</td>
             <td class="num">${row.exact}</td>
             <td class="num">${row.qualifiers}</td>
             <td class="num">${row.methods}</td>
@@ -712,6 +789,13 @@
             </div>
             <div class="common">Prediccion mas comun: ${match.common}</div>
             <p class="hint">Exactos: ${match.exactScorers.length ? match.exactScorers.join(", ") : "Pendiente"}</p>
+          </article>
+        `).join("");
+
+        document.getElementById("previousMatchesGrid").innerHTML = PREVIOUS_MATCHES.map((match) => `
+          <article class="previous-card">
+            <strong>${match.id} · ${match.label}</strong>
+            <div class="label">Clasifica ${displayName(match.qualifier)} · ${match.method}</div>
           </article>
         `).join("");
 
