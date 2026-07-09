@@ -316,7 +316,7 @@
             <span>Cuartos en vivo</span>
           </div>
         </div>
-        <div class="label" id="sourceLabel">Google Sheets</div>
+        <div class="label" id="sourceLabel">Google Sheets + CSV octavos</div>
       </div>
     </header>
 
@@ -431,10 +431,14 @@
         "Daniel", "Arthur", "Jose Luis", "Marcelo", "Anny", "Moises", "Alex", "Omar", "Fernando", "Diana", "Oscar"
       ];
       const DISPLAY_NAMES = {
-        Jesus: "Jesus",
-        "Jose Luis": "Jose Luis",
-        Moises: "Moises",
-        Oscar: "Oscar"
+        Jesus: "Jesús",
+        "Jose Luis": "José Luis",
+        Moises: "Moisés",
+        Oscar: "Óscar",
+        Canada: "Canadá",
+        Mexico: "México",
+        Espana: "España",
+        Belgica: "Bélgica"
       };
       const ALIASES = {
         "gabriela orrillo": "Gabriela",
@@ -486,16 +490,18 @@
         Omar: { points: 0, exact: 0, qualifiers: 0, methods: 0 }
       };
       const PREVIOUS_MATCHES = [
-        { id: "O1", label: "Canada 0-3 Marruecos", qualifier: "Marruecos", method: "90 minutos" },
+        { id: "O1", label: "Canadá 0-3 Marruecos", qualifier: "Marruecos", method: "90 minutos" },
         { id: "O2", label: "Paraguay 0-1 Francia", qualifier: "Francia", method: "90 minutos" },
         { id: "O3", label: "Brasil 1-2 Noruega", qualifier: "Noruega", method: "90 minutos" },
-        { id: "O4", label: "Mexico 2-3 Inglaterra", qualifier: "Inglaterra", method: "90 minutos" },
-        { id: "O5", label: "Estados Unidos 1-4 Belgica", qualifier: "Belgica", method: "90 minutos" },
-        { id: "O6", label: "Portugal 0-1 Espana", qualifier: "Espana", method: "90 minutos" },
+        { id: "O4", label: "México 2-3 Inglaterra", qualifier: "Inglaterra", method: "90 minutos" },
+        { id: "O5", label: "Estados Unidos 1-4 Bélgica", qualifier: "Belgica", method: "90 minutos" },
+        { id: "O6", label: "Portugal 0-1 España", qualifier: "Espana", method: "90 minutos" },
         { id: "O7", label: "Suiza 0-0 Colombia", qualifier: "Suiza", method: "Penales" },
         { id: "O8", label: "Argentina 3-2 Egipto", qualifier: "Argentina", method: "90 minutos" }
       ];
       let dashboard = null;
+      let activeBaseline = BASELINE;
+      let activePreviousMatches = PREVIOUS_MATCHES;
 
       function normalize(value) {
         return String(value || "")
@@ -537,6 +543,75 @@
       function parseScore(value) {
         const parsed = parseInt(String(value || "").replace(/[^\d-]/g, ""), 10);
         return Number.isFinite(parsed) ? parsed : 0;
+      }
+
+      function parseSimpleCsv(text) {
+        const rows = [];
+        let row = [];
+        let field = "";
+        let inQuotes = false;
+        for (let index = 0; index < text.length; index += 1) {
+          const char = text[index];
+          const next = text[index + 1];
+          if (char === '"') {
+            if (inQuotes && next === '"') {
+              field += '"';
+              index += 1;
+            } else {
+              inQuotes = !inQuotes;
+            }
+            continue;
+          }
+          if (char === "," && !inQuotes) {
+            row.push(field);
+            field = "";
+            continue;
+          }
+          if ((char === "\n" || char === "\r") && !inQuotes) {
+            if (char === "\r" && next === "\n") index += 1;
+            row.push(field);
+            if (row.some((cell) => cell.trim() !== "")) rows.push(row);
+            row = [];
+            field = "";
+            continue;
+          }
+          field += char;
+        }
+        row.push(field);
+        if (row.some((cell) => cell.trim() !== "")) rows.push(row);
+        return rows;
+      }
+
+      async function loadCsvRows(path) {
+        const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`No se pudo leer ${path}`);
+        return parseSimpleCsv(await response.text());
+      }
+
+      function baselineFromCsv(rows) {
+        if (rows.length < 2) return BASELINE;
+        const baseline = {};
+        rows.slice(1).forEach((row) => {
+          const name = canonicalParticipant(row[0]);
+          if (!name) return;
+          baseline[name] = {
+            points: parseScore(row[1]),
+            exact: parseScore(row[2]),
+            qualifiers: parseScore(row[3]),
+            methods: parseScore(row[4])
+          };
+        });
+        return { ...BASELINE, ...baseline };
+      }
+
+      function previousMatchesFromCsv(rows) {
+        if (rows.length < 2) return PREVIOUS_MATCHES;
+        return rows.slice(1).map((row) => ({
+          id: row[0],
+          label: `${displayName(row[1])} ${row[3]}-${row[4]} ${displayName(row[2])}`,
+          qualifier: row[6],
+          method: normalizeMethod(row[5])
+        }));
       }
 
       function parseDate(value, fallbackIndex) {
@@ -672,7 +747,7 @@
       function buildDashboard(predictionsByParticipant, results) {
         const standings = PARTICIPANTS.map((name) => {
           const predictions = predictionsByParticipant.get(name) || [];
-          const base = BASELINE[name] || { points: 0, exact: 0, qualifiers: 0, methods: 0 };
+          const base = activeBaseline[name] || { points: 0, exact: 0, qualifiers: 0, methods: 0 };
           const row = {
             name,
             basePoints: base.points,
@@ -792,7 +867,7 @@
           </article>
         `).join("");
 
-        document.getElementById("previousMatchesGrid").innerHTML = PREVIOUS_MATCHES.map((match) => `
+        document.getElementById("previousMatchesGrid").innerHTML = activePreviousMatches.map((match) => `
           <article class="previous-card">
             <strong>${match.id} · ${match.label}</strong>
             <div class="label">Clasifica ${displayName(match.qualifier)} · ${match.method}</div>
@@ -832,6 +907,17 @@
           errorBox.style.display = "none";
           const responsesTable = await loadGoogleTable({ gid: "0" }, "__kinelaResponses");
           let resultsRows = [];
+          try {
+            const [baselineRows, previousRows] = await Promise.all([
+              loadCsvRows("data/octavos_acumulado.csv"),
+              loadCsvRows("data/octavos_partidos.csv")
+            ]);
+            activeBaseline = baselineFromCsv(baselineRows);
+            activePreviousMatches = previousMatchesFromCsv(previousRows);
+          } catch (error) {
+            activeBaseline = BASELINE;
+            activePreviousMatches = PREVIOUS_MATCHES;
+          }
           try {
             const resultsTable = await loadGoogleTable({ sheet: "RESULTADOS" }, "__kinelaResults");
             resultsRows = tableToRows(resultsTable);
