@@ -1,4 +1,5 @@
 import { buildDashboardData } from "./store";
+import { fetchEpsnWorldCupResults } from "./espn-results";
 import { defaultScoringRules } from "./scoring";
 import type {
   AppState,
@@ -15,9 +16,6 @@ const SHEET_ID = "1OkowhSrhW751BF8ioQmtRRJjmgXetYr3IDL8LUzbocg";
 const RESPONSES_CSV_URL =
   process.env.KINELA_RESPONSES_CSV_URL ??
   `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
-const RESULTS_CSV_URL =
-  process.env.KINELA_RESULTS_CSV_URL ??
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=RESULTADOS`;
 
 const participantNames = [
   "Freddy",
@@ -344,83 +342,14 @@ function parseSubmissions(rows: string[][], participants: Participant[]) {
   return { predictionSubmissions, predictions };
 }
 
-function findHeaderIndex(headers: string[], candidates: string[]) {
-  return headers.findIndex((header) => candidates.includes(normalizeText(header)));
-}
-
-function matchIdFromResult(value: string, teamA: string, teamB: string) {
-  const normalized = normalizeText(value);
-  const byId = matchConfigs.find((config) => normalizeText(config.id) === normalized);
-  if (byId) return byId.id;
-
-  const byTeams = matchConfigs.find((config) => {
-    const text = `${normalizeText(config.teamA)} ${normalizeText(config.teamB)}`;
-    return (
-      normalized.includes(normalizeText(config.teamA)) &&
-      normalized.includes(normalizeText(config.teamB))
-    ) || text === `${normalizeText(teamA)} ${normalizeText(teamB)}`;
-  });
-
-  return byTeams?.id;
-}
-
-function parseResults(text: string): MatchResult[] {
-  const rows = parseCsv(text);
-  if (rows.length < 2) return [];
-
-  const headers = rows[0];
-  const matchIndex = findHeaderIndex(headers, ["partido", "id"]);
-  const goalsAIndex = findHeaderIndex(headers, ["marcador a", "goles a", "score a"]);
-  const goalsBIndex = findHeaderIndex(headers, ["marcador b", "goles b", "score b"]);
-  const methodIndex = findHeaderIndex(headers, ["metodo oficial", "metodo"]);
-  const qualifierIndex = findHeaderIndex(headers, ["clasificado oficial", "clasificado"]);
-  const statusIndex = findHeaderIndex(headers, ["estado", "status"]);
-  const penaltiesAIndex = findHeaderIndex(headers, ["penales a", "penales equipo a"]);
-  const penaltiesBIndex = findHeaderIndex(headers, ["penales b", "penales equipo b"]);
-
-  if ([matchIndex, goalsAIndex, goalsBIndex, methodIndex, qualifierIndex].some((index) => index < 0)) {
-    return [];
-  }
-
-  return rows.slice(1).flatMap((row, index): MatchResult[] => {
-    const config =
-      matchConfigs.find((item) => item.id === row[matchIndex]) ??
-      matchConfigs.find((item) => matchIdFromResult(row[matchIndex] ?? "", item.teamA, item.teamB) === item.id);
-
-    if (!config) return [];
-
-    const status = normalizeText(row[statusIndex] ?? "finalizado");
-    const confirmed = ["finalizado", "confirmado", "ok", "finished", "confirmed"].includes(status);
-    const method = normalizeMethod(row[methodIndex] ?? "");
-
-    return [
-      {
-        id: `R${String(index + 1).padStart(3, "0")}`,
-        match_id: config.id,
-        source: "manual",
-        goals_a_90: parseScore(row[goalsAIndex]),
-        goals_b_90: parseScore(row[goalsBIndex]),
-        penalties_a: penaltiesAIndex >= 0 ? parseScore(row[penaltiesAIndex]) : undefined,
-        penalties_b: penaltiesBIndex >= 0 ? parseScore(row[penaltiesBIndex]) : undefined,
-        qualifier: canonicalTeam(row[qualifierIndex] ?? "", config.teamA, config.teamB),
-        method,
-        confirmed,
-        confirmed_by: confirmed ? "Google Sheets" : undefined,
-        confirmed_at: confirmed ? new Date().toISOString() : undefined,
-      },
-    ];
-  });
-}
-
 export async function buildGoogleSheetDashboardData() {
-  const [responsesText, resultsText] = await Promise.all([
+  const [responsesText, results] = await Promise.all([
     fetchCsv(RESPONSES_CSV_URL),
-    fetchCsv(RESULTS_CSV_URL).catch(() => ""),
+    fetchEpsnWorldCupResults(matchConfigs),
   ]);
 
   const responseRows = parseCsv(responsesText);
   const canonicalNames = responseRows.slice(1).map((row) => canonicalParticipant(row[2] ?? ""));
-  const results = resultsText ? parseResults(resultsText) : [];
   const resultsById = new Map(results.filter((result) => result.confirmed).map((result) => [result.match_id, result]));
   const participants = buildParticipants(canonicalNames);
   const matches = buildMatches(resultsById);

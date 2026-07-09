@@ -53,7 +53,7 @@ npm run export:google-sheet
 ```
 
 `npm run export:excel` genera `exports/kinela-mundialista-demo.xlsx`.
-`npm run export:google-sheet` lee Google Sheets y genera `docs/kinela_actualizada.xlsx`.
+`npm run export:google-sheet` lee respuestas desde Google Sheets, resultados desde ESPN y genera `docs/kinela_actualizada.xlsx`.
 
 ## Variables de entorno
 
@@ -79,19 +79,19 @@ Tablas previstas: `participants`, `phases`, `matches`, `prediction_submissions`,
 
 ## API deportiva
 
-La demo sincroniza un proveedor local desde `demoFixtures`. Para produccion, implementar la interfaz `SportsApiProvider` descrita en `docs/sports-api.md` y mantener las API keys solo del lado servidor.
+La version publica usa ESPN FIFA World Cup como fuente automatica de resultados, sin API key. La demo local mantiene `demoFixtures` para pruebas.
 
 ## Exportacion Excel
 
 El endpoint `/api/admin/export-excel` genera un `.xlsx` con hojas: Inicio, Participantes, Fases, Partidos, Predicciones, Resultados, Calculo_Puntos, Posiciones y Metricas.
 
-La version publica descarga `docs/kinela_actualizada.xlsx`, que se regenera con GitHub Actions cada 15 minutos desde Google Sheets. Ver `docs/excel-automatico.md`.
+La version publica descarga `docs/kinela_actualizada.xlsx`, que se regenera con GitHub Actions cada 10 minutos desde Google Sheets y ESPN. Ver `docs/excel-automatico.md`.
 
 ## Operacion diaria
 
 1. Abrir fase en `/admin/phases`.
 2. Participantes envian predicciones en `/predict`.
 3. Cerrar fase antes del primer partido.
-4. Sincronizar resultados por cron o confirmar manualmente en `/admin/results`.
+4. Esperar la sincronizacion automatica de ESPN despues de cada partido.
 5. Revisar dashboard publico.
 6. Exportar Excel desde `/admin/export`.

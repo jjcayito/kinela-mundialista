@@ -6,11 +6,12 @@ https://jjcayito.github.io/kinela-mundialista/kinela_actualizada.xlsx
 
 ## Como se actualiza
 
-1. El juez completa la hoja `RESULTADOS` en Google Sheets.
-2. GitHub Actions ejecuta el flujo `Actualizar Excel de kinela` cada 15 minutos.
-3. El flujo lee las respuestas y resultados desde Google Sheets.
-4. Se genera `docs/kinela_actualizada.xlsx`.
-5. Si el archivo cambio, GitHub lo publica automaticamente en Pages.
+1. Los participantes envian sus apuestas en Google Forms.
+2. ESPN publica el resultado oficial del partido en su marcador de FIFA World Cup.
+3. GitHub Actions ejecuta el flujo `Actualizar Excel de kinela` cada 10 minutos.
+4. El flujo lee respuestas desde Google Sheets y resultados desde ESPN.
+5. Se genera `docs/kinela_actualizada.xlsx`.
+6. Si cambio algun resultado, GitHub publica automaticamente la nueva version en Pages.
 
 Tambien se puede forzar la actualizacion desde GitHub:
 
@@ -19,19 +20,12 @@ Tambien se puede forzar la actualizacion desde GitHub:
 3. Seleccionar `Actualizar Excel de kinela`.
 4. Presionar `Run workflow`.
 
-## Formato esperado de RESULTADOS
+## Fuente de resultados
 
-La hoja `RESULTADOS` debe tener estos encabezados:
-
-```text
-Partido | Marcador A | Marcador B | Metodo oficial | Clasificado oficial | Estado
-```
-
-Ejemplos:
+La fuente automatica es el marcador publico de ESPN para FIFA World Cup:
 
 ```text
-QF1 | 2 | 1 | 90 minutos | Francia | Finalizado
-QF2 | 1 | 1 | Penales    | España  | Finalizado
+https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard
 ```
 
-Para partidos por penales, el marcador debe ser el resultado antes de la tanda. Si el partido quedo 1-1 y gano España por penales, se registra `1`, `1`, `Penales`, `España`, `Finalizado`.
+Los partidos por penales se toman como marcador empatado y clasificado segun el ganador que marque ESPN. Los partidos por suplementario se identifican cuando ESPN publica el estado `AET` o `After Extra Time`.

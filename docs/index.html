@@ -339,7 +339,7 @@
         </div>
         <div class="header-actions">
           <a class="download-link" href="kinela_actualizada.xlsx">Descargar Excel</a>
-          <div class="label" id="sourceLabel">Google Sheets + CSV octavos</div>
+          <div class="label" id="sourceLabel">Google Forms + ESPN + CSV octavos</div>
         </div>
       </div>
     </header>
@@ -450,6 +450,26 @@
 
     <script>
       const SHEET_ID = "1OkowhSrhW751BF8ioQmtRRJjmgXetYr3IDL8LUzbocg";
+      const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
+      const ESPN_DATES = "20260709-20260712";
+      const ESPN_TEAM_NAMES = {
+        argentina: "Argentina",
+        belgium: "Belgica",
+        brazil: "Brasil",
+        canada: "Canada",
+        colombia: "Colombia",
+        egypt: "Egipto",
+        england: "Inglaterra",
+        france: "Francia",
+        mexico: "Mexico",
+        morocco: "Marruecos",
+        norway: "Noruega",
+        paraguay: "Paraguay",
+        portugal: "Portugal",
+        spain: "Espana",
+        switzerland: "Suiza",
+        "united states": "Estados Unidos"
+      };
       const PARTICIPANTS = [
         "Freddy", "Gabriela", "Jean", "Juan", "Jesus", "Diego", "Aldo", "Javier", "Gino", "Manuel", "Jorge",
         "Daniel", "Arthur", "Jose Luis", "Marcelo", "Anny", "Moises", "Alex", "Omar", "Fernando", "Diana", "Oscar"
@@ -555,6 +575,10 @@
         if (n.includes(normalize(teamA))) return teamA;
         if (n.includes(normalize(teamB))) return teamB;
         return String(value || "").trim();
+      }
+
+      function espnTeamName(value) {
+        return ESPN_TEAM_NAMES[normalize(value)] || String(value || "").trim();
       }
 
       function normalizeMethod(value) {
@@ -768,6 +792,70 @@
         return results;
       }
 
+      function espnMethod(event) {
+        const competition = event.competitions && event.competitions[0];
+        const status = (competition && competition.status && competition.status.type) || (event.status && event.status.type) || {};
+        const n = normalize([status.detail, status.shortDetail, status.description].filter(Boolean).join(" "));
+        if (n.includes("pen")) return "Penales";
+        if (n.includes("aet") || n.includes("extra")) return "Suplementario";
+        return "90 minutos";
+      }
+
+      function espnCompleted(event) {
+        const competition = event.competitions && event.competitions[0];
+        return Boolean((competition && competition.status && competition.status.type && competition.status.type.completed) || (event.status && event.status.type && event.status.type.completed));
+      }
+
+      function espnCompetitors(event) {
+        const competition = event.competitions && event.competitions[0];
+        return ((competition && competition.competitors) || []).map((competitor) => ({
+          name: espnTeamName(competitor.team && (competitor.team.displayName || competitor.team.shortDisplayName || competitor.team.name)),
+          score: parseScore(competitor.score),
+          winner: Boolean(competitor.winner)
+        }));
+      }
+
+      function espnEventMatches(event, match) {
+        const names = espnCompetitors(event).map((competitor) => normalize(competitor.name));
+        return names.includes(normalize(match.teamA)) && names.includes(normalize(match.teamB));
+      }
+
+      async function loadEpsnResults() {
+        const url = new URL(ESPN_SCOREBOARD_URL);
+        url.searchParams.set("limit", "120");
+        url.searchParams.set("dates", ESPN_DATES);
+        url.searchParams.set("_", Date.now().toString());
+
+        const response = await fetch(url.toString(), { cache: "no-store" });
+        if (!response.ok) throw new Error(`No se pudo leer ESPN: ${response.status}`);
+
+        const payload = await response.json();
+        const events = Array.isArray(payload.events) ? payload.events : [];
+        const results = new Map();
+
+        MATCHES.forEach((match) => {
+          const event = events.find((item) => espnEventMatches(item, match));
+          if (!event || !espnCompleted(event)) return;
+
+          const competitors = espnCompetitors(event);
+          const teamA = competitors.find((competitor) => normalize(competitor.name) === normalize(match.teamA));
+          const teamB = competitors.find((competitor) => normalize(competitor.name) === normalize(match.teamB));
+          const winner = competitors.find((competitor) => competitor.winner);
+          if (!teamA || !teamB || !winner) return;
+
+          results.set(match.id, {
+            matchId: match.id,
+            goalsA: teamA.score,
+            goalsB: teamB.score,
+            method: espnMethod(event),
+            qualifier: canonicalTeam(winner.name, match.teamA, match.teamB),
+            confirmed: true
+          });
+        });
+
+        return results;
+      }
+
       function buildDashboard(predictionsByParticipant, results) {
         const standings = PARTICIPANTS.map((name) => {
           const predictions = predictionsByParticipant.get(name) || [];
@@ -930,7 +1018,7 @@
         try {
           errorBox.style.display = "none";
           const responsesTable = await loadGoogleTable({ gid: "0" }, "__kinelaResponses");
-          let resultsRows = [];
+          let espnResults = new Map();
           try {
             const [baselineRows, previousRows] = await Promise.all([
               loadCsvRows("data/octavos_acumulado.csv"),
@@ -943,15 +1031,13 @@
             activePreviousMatches = PREVIOUS_MATCHES;
           }
           try {
-            const resultsTable = await loadGoogleTable({ sheet: "RESULTADOS" }, "__kinelaResults");
-            resultsRows = tableToRows(resultsTable);
+            espnResults = await loadEpsnResults();
           } catch (error) {
-            resultsRows = [];
+            espnResults = new Map();
           }
           const responsesRows = tableToRows(responsesTable);
           const predictions = latestPredictions(responsesRows);
-          const results = parseResults(resultsRows);
-          render(buildDashboard(predictions, results));
+          render(buildDashboard(predictions, espnResults));
         } catch (error) {
           errorBox.textContent = `No se pudo actualizar la kinela: ${error.message}`;
           errorBox.style.display = "block";
