@@ -75,6 +75,27 @@
         font-size: 14px;
       }
 
+      .header-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .download-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        border-radius: 8px;
+        background: var(--green);
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 0 14px;
+        text-decoration: none;
+      }
+
       main {
         padding: 28px 0 44px;
       }
@@ -316,7 +337,10 @@
             <span>Cuartos en vivo</span>
           </div>
         </div>
-        <div class="label" id="sourceLabel">Google Sheets + CSV octavos</div>
+        <div class="header-actions">
+          <a class="download-link" href="kinela_actualizada.xlsx">Descargar Excel</a>
+          <div class="label" id="sourceLabel">Google Sheets + CSV octavos</div>
+        </div>
       </div>
     </header>
 

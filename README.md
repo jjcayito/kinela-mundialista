@@ -49,9 +49,11 @@ npm run db:seed
 npm run sync:demo
 npm run sync:results
 npm run export:excel
+npm run export:google-sheet
 ```
 
 `npm run export:excel` genera `exports/kinela-mundialista-demo.xlsx`.
+`npm run export:google-sheet` lee Google Sheets y genera `docs/kinela_actualizada.xlsx`.
 
 ## Variables de entorno
 
@@ -82,6 +84,8 @@ La demo sincroniza un proveedor local desde `demoFixtures`. Para produccion, imp
 ## Exportacion Excel
 
 El endpoint `/api/admin/export-excel` genera un `.xlsx` con hojas: Inicio, Participantes, Fases, Partidos, Predicciones, Resultados, Calculo_Puntos, Posiciones y Metricas.
+
+La version publica descarga `docs/kinela_actualizada.xlsx`, que se regenera con GitHub Actions cada 15 minutos desde Google Sheets. Ver `docs/excel-automatico.md`.
 
 ## Operacion diaria
 

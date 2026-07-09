@@ -1,5 +1,5 @@
 import { buildDashboardData, getState } from "./store";
-import type { AppState } from "./types";
+import type { AppState, DashboardData } from "./types";
 
 type SheetRow = Record<string, unknown>;
 type WorkbookSheet = { name: string; rows: SheetRow[] };
@@ -281,6 +281,83 @@ export function buildExcelBuffer(state: AppState = getState()): Buffer {
           metrica: "Lider actual",
           valor: dashboard.metrics.biggest_riser?.participant_name ?? "N/D",
           puntos: dashboard.metrics.biggest_riser?.points ?? 0,
+        },
+        {
+          metrica: "Predicciones por 90 minutos",
+          valor: dashboard.metrics.method_distribution["90 minutos"],
+        },
+        {
+          metrica: "Predicciones por suplementario",
+          valor: dashboard.metrics.method_distribution.Suplementario,
+        },
+        {
+          metrica: "Predicciones por penales",
+          valor: dashboard.metrics.method_distribution.Penales,
+        },
+      ],
+    },
+  ];
+
+  return zip(workbookFiles(sheets));
+}
+
+export function buildDashboardExcelBuffer(dashboard: DashboardData): Buffer {
+  const sheets: WorkbookSheet[] = [
+    {
+      name: "Resumen",
+      rows: [
+        {
+          titulo: dashboard.title,
+          fase_actual: dashboard.current_phase?.name ?? "Sin fase",
+          estado: dashboard.current_phase?.status ?? "Sin estado",
+          ultima_actualizacion: dashboard.last_updated,
+          lider: dashboard.metrics.biggest_riser?.participant_name ?? "N/D",
+          puntos_lider: dashboard.metrics.biggest_riser?.points ?? 0,
+        },
+      ],
+    },
+    { name: "Posiciones", rows: toRows(dashboard.standings) },
+    { name: "Partidos", rows: toRows(dashboard.matchInsights) },
+    {
+      name: "Detalle_Participantes",
+      rows: dashboard.participantViews.flatMap((participant) =>
+        participant.matches.map((match) => ({
+          participante: participant.participant_name,
+          partido_id: match.match_id,
+          partido: `${match.team_a} vs ${match.team_b}`,
+          apuesta: match.prediction_label,
+          clasificado_apostado: match.qualifier_label,
+          via_apostada: match.method_label,
+          resultado: match.result_label,
+          puntos: match.points,
+          estado: match.status,
+        })),
+      ),
+    },
+    {
+      name: "Antecedente_Octavos",
+      rows:
+        dashboard.previousMatches?.map((match) => ({
+          partido_id: match.match_id,
+          resultado: match.label,
+          clasificado: match.qualifier,
+          via: match.method,
+        })) ?? [],
+    },
+    {
+      name: "Metricas",
+      rows: [
+        {
+          metrica: "Lider actual",
+          valor: dashboard.metrics.biggest_riser?.participant_name ?? "N/D",
+          puntos: dashboard.metrics.biggest_riser?.points ?? 0,
+        },
+        {
+          metrica: "Partido con mas puntos repartidos",
+          valor: dashboard.metrics.match_most_points
+            ? `${dashboard.metrics.match_most_points.team_a} vs ${dashboard.metrics.match_most_points.team_b}`
+            : "N/D",
+          puntos: dashboard.metrics.match_most_points?.points_distributed ?? 0,
         },
         {
           metrica: "Predicciones por 90 minutos",
