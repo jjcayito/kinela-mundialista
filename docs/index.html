@@ -417,6 +417,12 @@
       </section>
 
       <section>
+        <h2>Semifinales</h2>
+        <p class="hint">Partidos ya definidos para la siguiente fase.</p>
+        <div class="previous-grid" id="nextMatchesGrid"></div>
+      </section>
+
+      <section>
         <h2>Antecedente: octavos de final</h2>
         <p class="hint">Estos resultados ya estan cerrados y forman la base acumulada de la tabla.</p>
         <div class="previous-grid" id="previousMatchesGrid"></div>
@@ -451,7 +457,7 @@
     <script>
       const SHEET_ID = "1OkowhSrhW751BF8ioQmtRRJjmgXetYr3IDL8LUzbocg";
       const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
-      const ESPN_DATES = "20260709-20260712";
+      const ESPN_DATES = "20260709-20260716";
       const ESPN_TEAM_NAMES = {
         argentina: "Argentina",
         belgium: "Belgica",
@@ -492,7 +498,8 @@
         "anny pacheco": "Anny",
         "freddy pacheco": "Freddy",
         "alex": "Alex",
-        "alex montalvo": "Alex"
+        "alex montalvo": "Alex",
+        "manu": "Manuel"
       };
       const MATCHES = [
         { id: "QF1", order: 1, teamA: "Francia", teamB: "Marruecos", q: 3, m: 4, a: 5, b: 6 },
@@ -542,6 +549,10 @@
         { id: "O6", label: "Portugal 0-1 España", qualifier: "Espana", method: "90 minutos" },
         { id: "O7", label: "Suiza 0-0 Colombia", qualifier: "Suiza", method: "Penales" },
         { id: "O8", label: "Argentina 3-2 Egipto", qualifier: "Argentina", method: "90 minutos" }
+      ];
+      const NEXT_MATCHES = [
+        { id: "SF1", label: "Francia vs España", date: "14/07/2026 2:00 p. m.", source: "ESPN" },
+        { id: "SF2", label: "Inglaterra vs Argentina", date: "15/07/2026 2:00 p. m.", source: "ESPN" }
       ];
       let dashboard = null;
       let activeBaseline = BASELINE;
@@ -717,14 +728,14 @@
 
       function scorePrediction(prediction, result) {
         if (!result || !result.confirmed) return emptyScore();
+        if (prediction.qualifier !== result.qualifier) return emptyScore();
         const score = emptyScore();
         if (regulatoryOutcome(prediction.method, prediction.goalsA, prediction.goalsB) === regulatoryOutcome(result.method, result.goalsA, result.goalsB)) score.result90 = POINTS.result90;
-        if (prediction.qualifier === result.qualifier) score.qualifier = POINTS.qualifier;
+        score.qualifier = POINTS.qualifier;
         if (prediction.method === result.method) score.method = POINTS.method;
 
         const scoreCriteria =
           prediction.method === result.method &&
-          prediction.method !== "Suplementario" &&
           !(prediction.method === "Penales" && prediction.goalsA !== prediction.goalsB);
 
         if (scoreCriteria && prediction.goalsA === result.goalsA && prediction.goalsB === result.goalsB) score.exact = POINTS.exact;
@@ -976,6 +987,13 @@
             </div>
             <div class="common">Prediccion mas comun: ${match.common}</div>
             <p class="hint">Exactos: ${match.exactScorers.length ? match.exactScorers.join(", ") : "Pendiente"}</p>
+          </article>
+        `).join("");
+
+        document.getElementById("nextMatchesGrid").innerHTML = NEXT_MATCHES.map((match) => `
+          <article class="previous-card">
+            <strong>${match.id} - ${match.label}</strong>
+            <div class="label">${match.date} - Fuente ${match.source}</div>
           </article>
         `).join("");
 

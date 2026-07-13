@@ -207,4 +207,13 @@ export interface DashboardData {
     qualifier: string;
     method: PredictionMethod;
   }>;
+  nextMatches?: Array<{
+    match_id: string;
+    phase: string;
+    starts_at: string;
+    team_a: string;
+    team_b: string;
+    source: string;
+    status: string;
+  }>;
 }

@@ -51,6 +51,7 @@ const aliases: Record<string, string> = {
   "freddy pacheco": "Freddy",
   "alex": "Alex",
   "alex montalvo": "Alex",
+  "manu": "Manuel",
 };
 
 const matchConfigs = [
@@ -134,6 +135,27 @@ const previousMatches = [
   { match_id: "O6", label: "Portugal 0-1 España", qualifier: "España", method: "90 minutos" as const },
   { match_id: "O7", label: "Suiza 0-0 Colombia", qualifier: "Suiza", method: "Penales" as const },
   { match_id: "O8", label: "Argentina 3-2 Egipto", qualifier: "Argentina", method: "90 minutos" as const },
+];
+
+const nextMatches = [
+  {
+    match_id: "SF1",
+    phase: "Semifinal",
+    starts_at: "2026-07-14T14:00:00-05:00",
+    team_a: "Francia",
+    team_b: "España",
+    source: "ESPN",
+    status: "Programado",
+  },
+  {
+    match_id: "SF2",
+    phase: "Semifinal",
+    starts_at: "2026-07-15T14:00:00-05:00",
+    team_a: "Inglaterra",
+    team_b: "Argentina",
+    source: "ESPN",
+    status: "Programado",
+  },
 ];
 
 function parseCsv(text: string): string[][] {
@@ -425,5 +447,6 @@ export async function buildGoogleSheetDashboardData() {
     title: "Kinela Mundialista - Cuartos de final",
     last_updated: new Date().toISOString(),
     previousMatches,
+    nextMatches,
   };
 }

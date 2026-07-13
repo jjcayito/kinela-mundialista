@@ -9,7 +9,7 @@ export interface EpsnMatchConfig {
 const ESPN_SCOREBOARD_URL =
   process.env.KINELA_ESPN_SCOREBOARD_URL ??
   "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
-const ESPN_DATES = process.env.KINELA_ESPN_DATES ?? "20260709-20260712";
+const ESPN_DATES = process.env.KINELA_ESPN_DATES ?? "20260709-20260716";
 const ESPN_LIMIT = process.env.KINELA_ESPN_LIMIT ?? "120";
 
 const teamAliases: Record<string, string> = {

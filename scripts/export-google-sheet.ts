@@ -12,6 +12,7 @@ function fingerprintDashboard(dashboard: Awaited<ReturnType<typeof buildGoogleSh
     participantViews: dashboard.participantViews,
     metrics: dashboard.metrics,
     previousMatches: dashboard.previousMatches,
+    nextMatches: dashboard.nextMatches,
   };
 
   return createHash("sha256").update(JSON.stringify(payload)).digest("hex");

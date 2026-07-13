@@ -345,6 +345,19 @@ export function buildDashboardExcelBuffer(dashboard: DashboardData): Buffer {
         })) ?? [],
     },
     {
+      name: "Semifinales",
+      rows:
+        dashboard.nextMatches?.map((match) => ({
+          partido_id: match.match_id,
+          fase: match.phase,
+          fecha_hora_peru: match.starts_at,
+          equipo_a: match.team_a,
+          equipo_b: match.team_b,
+          fuente: match.source,
+          estado: match.status,
+        })) ?? [],
+    },
+    {
       name: "Metricas",
       rows: [
         {

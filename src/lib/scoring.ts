@@ -33,7 +33,6 @@ function canScoreGoalsBasedCriteria(
   officialResult: Pick<MatchResult, "method">,
 ): boolean {
   if (prediction.predicted_method !== officialResult.method) return false;
-  if (prediction.predicted_method === "Suplementario") return false;
   if (prediction.predicted_method === "Penales" && prediction.goals_a_90 !== prediction.goals_b_90) {
     return false;
   }
@@ -72,6 +71,20 @@ export function calculateMatchScore(
     };
   }
 
+  if (prediction.predicted_qualifier !== officialResult.qualifier) {
+    return {
+      pts_result_90: 0,
+      pts_qualifier: 0,
+      pts_method: 0,
+      pts_exact_score: 0,
+      pts_goal_difference: 0,
+      pts_goals_team_a: 0,
+      pts_goals_team_b: 0,
+      total: 0,
+      detail: ["No acerto clasificado"],
+    };
+  }
+
   const predictedOutcome = regulatoryOutcome(
     prediction.predicted_method,
     prediction.goals_a_90,
@@ -90,10 +103,7 @@ export function calculateMatchScore(
     predictedOutcome === officialOutcome ? rulePoints(scoringRules, "result_90") : 0;
   if (pts_result_90) detail.push("Acerto resultado en 90 minutos");
 
-  const pts_qualifier =
-    prediction.predicted_qualifier === officialResult.qualifier
-      ? rulePoints(scoringRules, "qualifier")
-      : 0;
+  const pts_qualifier = rulePoints(scoringRules, "qualifier");
   if (pts_qualifier) detail.push("Acerto clasificado");
 
   const pts_method =

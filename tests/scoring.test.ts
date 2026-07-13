@@ -51,7 +51,7 @@ describe("calculateMatchScore", () => {
     expect(score.pts_method).toBe(2);
   });
 
-  it("trata suplementario con marcador ganador como empate en 90 sin puntos de marcador", () => {
+  it("puntua suplementario con marcador ganador por goles", () => {
     const score = calculateMatchScore(
       { goals_a_90: 3, goals_b_90: 2, predicted_qualifier: "A", predicted_method: "Suplementario" },
       { goals_a_90: 3, goals_b_90: 2, qualifier: "A", method: "Suplementario", confirmed: true },
@@ -61,8 +61,9 @@ describe("calculateMatchScore", () => {
     expect(score.pts_result_90).toBe(5);
     expect(score.pts_qualifier).toBe(3);
     expect(score.pts_method).toBe(2);
-    expect(score.pts_exact_score).toBe(0);
-    expect(score.pts_goal_difference).toBe(0);
+    expect(score.pts_exact_score).toBe(4);
+    expect(score.pts_goal_difference).toBe(2);
+    expect(score.total).toBe(18);
   });
 
   it("acepta penales con marcador de tanda pero no entrega puntos por goles", () => {
@@ -112,14 +113,26 @@ describe("calculateMatchScore", () => {
     expect(score.pts_goals_team_b).toBe(0);
   });
 
-  it("devuelve cero cuando la prediccion no acierta nada relevante", () => {
+  it("devuelve cero cuando no acierta el clasificado", () => {
     const score = calculateMatchScore(
       { goals_a_90: 2, goals_b_90: 0, predicted_qualifier: "A", predicted_method: "90 minutos" },
       { goals_a_90: 0, goals_b_90: 3, qualifier: "B", method: "90 minutos", confirmed: true },
       rules,
     );
 
-    expect(score.total).toBe(2);
-    expect(score.pts_method).toBe(2);
+    expect(score.total).toBe(0);
+    expect(score.pts_method).toBe(0);
+  });
+
+  it("devuelve cero si falla el clasificado aunque acierte suplementario", () => {
+    const score = calculateMatchScore(
+      { goals_a_90: 1, goals_b_90: 2, predicted_qualifier: "A", predicted_method: "Suplementario" },
+      { goals_a_90: 1, goals_b_90: 2, qualifier: "B", method: "Suplementario", confirmed: true },
+      rules,
+    );
+
+    expect(score.total).toBe(0);
+    expect(score.pts_result_90).toBe(0);
+    expect(score.pts_method).toBe(0);
   });
 });
