@@ -96,6 +96,21 @@
         text-decoration: none;
       }
 
+      .quick-nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .quick-nav a {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        font-size: 13px;
+        padding: 9px 10px;
+        text-decoration: none;
+      }
+
       main {
         padding: 28px 0 44px;
       }
@@ -123,9 +138,19 @@
         line-height: 1.05;
       }
 
+      .hero-copy {
+        max-width: 760px;
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
       .status-grid,
       .metrics,
-      .matches {
+      .matches,
+      .event-strip,
+      .rules-grid {
         display: grid;
         gap: 14px;
       }
@@ -135,6 +160,11 @@
       }
 
       .metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-top: 24px;
+      }
+
+      .event-strip {
         grid-template-columns: repeat(4, minmax(0, 1fr));
         margin-top: 24px;
       }
@@ -178,6 +208,28 @@
         font-size: 14px;
       }
 
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .section-head .hint {
+        margin-bottom: 0;
+      }
+
+      .notice {
+        border: 1px solid #d8c7a4;
+        border-radius: 8px;
+        background: #fff8e7;
+        color: #6f4d09;
+        font-size: 14px;
+        line-height: 1.45;
+        padding: 12px 14px;
+      }
+
       .table-box {
         overflow-x: auto;
         border: 1px solid var(--line);
@@ -212,6 +264,15 @@
       td.points {
         color: var(--green);
         font-weight: 700;
+      }
+
+      td.muted-cell {
+        color: var(--muted);
+      }
+
+      td.score-cell {
+        font-weight: 700;
+        white-space: nowrap;
       }
 
       .matches {
@@ -289,6 +350,43 @@
         margin-bottom: 16px;
       }
 
+      .tracker-tools {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .tracker-tools .notice {
+        flex: 1;
+        max-width: 620px;
+      }
+
+      .rules-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .rule-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        padding: 15px;
+      }
+
+      .rule-card strong {
+        display: block;
+        font-size: 24px;
+        margin-bottom: 6px;
+      }
+
+      .rule-card span {
+        display: block;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
       select {
         width: min(320px, 100%);
         height: 40px;
@@ -312,7 +410,9 @@
       @media (max-width: 850px) {
         .top,
         .hero,
-        .participant-tools {
+        .participant-tools,
+        .tracker-tools,
+        .section-head {
           align-items: stretch;
           flex-direction: column;
         }
@@ -321,7 +421,9 @@
         .status-grid,
         .metrics,
         .matches,
-        .previous-grid {
+        .previous-grid,
+        .event-strip,
+        .rules-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -334,12 +436,18 @@
           <div class="logo">K</div>
           <div>
             <strong>Kinela Mundialista</strong>
-            <span>Cuartos en vivo</span>
+            <span>Seguimiento publico del torneo</span>
           </div>
         </div>
         <div class="header-actions">
+          <nav class="quick-nav" aria-label="Secciones">
+            <a href="#posiciones">Tabla</a>
+            <a href="#partidos">Partidos</a>
+            <a href="#trazabilidad">Trazabilidad</a>
+            <a href="#reglas">Reglas</a>
+          </nav>
           <a class="download-link" href="kinela_actualizada.xlsx">Descargar Excel</a>
-          <div class="label" id="sourceLabel">Google Forms + ESPN + CSV octavos</div>
+          <div class="label" id="sourceLabel">Google Forms + ESPN + base historica</div>
         </div>
       </div>
     </header>
@@ -347,8 +455,9 @@
     <main class="wrap">
       <div class="hero">
         <div>
-          <div class="eyebrow">Cuartos de final</div>
-          <h1>Kinela Mundialista - Cuartos de final</h1>
+          <div class="eyebrow">Tablero publico</div>
+          <h1>Kinela Mundialista</h1>
+          <p class="hero-copy">Apuestas, resultados, puntos por partido y tabla general para seguir la polla durante todo el torneo.</p>
         </div>
         <div class="status-grid">
           <div class="card">
@@ -359,10 +468,41 @@
             <div class="label">Estado de fase</div>
             <div class="value" id="phaseStatus">Abierta</div>
           </div>
+          <div class="card">
+            <div class="label">Juez automatico</div>
+            <div class="value">ESPN</div>
+          </div>
+          <div class="card">
+            <div class="label">Maximo por partido</div>
+            <div class="value">18 pts</div>
+          </div>
         </div>
       </div>
 
       <div class="error" id="errorBox"></div>
+
+      <div class="event-strip" aria-label="Informacion del evento">
+        <div class="card">
+          <div class="label">Evento</div>
+          <div class="value">Mundial 2026</div>
+          <div class="detail">Octavos, cuartos y semifinales</div>
+        </div>
+        <div class="card">
+          <div class="label">Participantes</div>
+          <div class="value">22</div>
+          <div class="detail">Tabla abierta para todos</div>
+        </div>
+        <div class="card">
+          <div class="label">Fuente de apuestas</div>
+          <div class="value">Google Forms</div>
+          <div class="detail">Ultima respuesta por jugador</div>
+        </div>
+        <div class="card">
+          <div class="label">Excel publico</div>
+          <div class="value">Actualizado</div>
+          <div class="detail">Descarga disponible arriba</div>
+        </div>
+      </div>
 
       <div class="metrics">
         <div class="card">
@@ -387,7 +527,7 @@
         </div>
       </div>
 
-      <section>
+      <section id="posiciones">
         <h2>Tabla de posiciones</h2>
         <p class="hint">Desempates: exactos, clasificados, vias, respuestas completas y nombre.</p>
         <div class="table-box">
@@ -410,8 +550,36 @@
         </div>
       </section>
 
-      <section>
-        <h2>Partidos</h2>
+      <section id="resumen-partidos">
+        <div class="section-head">
+          <div>
+            <h2>Puntuacion por partido</h2>
+            <p class="hint">Resumen de puntos repartidos, exactos y participantes que sumaron en cada encuentro.</p>
+          </div>
+          <div class="notice" id="traceNotice">Octavos se mantiene como base cerrada; el detalle publicado es trazabilidad reconstruida.</div>
+        </div>
+        <div class="table-box">
+          <table>
+            <thead>
+              <tr>
+                <th>Fase</th>
+                <th>Partido</th>
+                <th>Resultado</th>
+                <th>Clasificado</th>
+                <th class="num">Apuestas</th>
+                <th class="num">Con puntos</th>
+                <th class="num">Exactos</th>
+                <th class="num">Puntos</th>
+                <th>Fuente</th>
+              </tr>
+            </thead>
+            <tbody id="matchSummaryBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="partidos">
+        <h2>Cuartos de final</h2>
         <p class="hint">Resultados oficiales y distribucion de apuestas por partido.</p>
         <div class="matches" id="matchesGrid"></div>
       </section>
@@ -428,11 +596,44 @@
         <div class="previous-grid" id="previousMatchesGrid"></div>
       </section>
 
-      <section>
+      <section id="trazabilidad">
+        <div class="tracker-tools">
+          <div>
+            <h2>Seguimiento por partido</h2>
+            <p class="hint">Cada fila muestra la apuesta de un jugador, el resultado oficial y los puntos que gano en ese partido.</p>
+          </div>
+          <select id="matchSelect" aria-label="Seleccionar partido"></select>
+        </div>
+        <div class="table-box">
+          <table>
+            <thead>
+              <tr>
+                <th>Participante</th>
+                <th>Apuesta</th>
+                <th>Clasificado</th>
+                <th>Via</th>
+                <th>Resultado oficial</th>
+                <th class="num">P90</th>
+                <th class="num">Clasif.</th>
+                <th class="num">Via</th>
+                <th class="num">Marcador</th>
+                <th class="num">Dif.</th>
+                <th class="num">Gol A</th>
+                <th class="num">Gol B</th>
+                <th class="num">Total</th>
+                <th>Nota</th>
+              </tr>
+            </thead>
+            <tbody id="matchTrackerBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="participantes">
         <div class="participant-tools">
           <div>
             <h2>Vista por participante</h2>
-            <p class="hint">Detalle de apuestas y puntos por cada partido.</p>
+            <p class="hint">Detalle de apuestas y puntos por cada partido disponible del torneo.</p>
           </div>
           <select id="participantSelect"></select>
         </div>
@@ -440,17 +641,35 @@
           <table>
             <thead>
               <tr>
+                <th>Fase</th>
                 <th>Partido</th>
                 <th>Apuesta</th>
                 <th>Clasificado</th>
                 <th>Via</th>
                 <th>Resultado</th>
                 <th class="num">Pts</th>
+                <th>Nota</th>
               </tr>
             </thead>
             <tbody id="participantBody"></tbody>
           </table>
         </div>
+      </section>
+
+      <section id="reglas">
+        <h2>Reglas de puntuacion</h2>
+        <p class="hint">Cada partido puede entregar hasta 18 puntos. En cuartos y las fases siguientes, si no se acierta el clasificado oficial, ese partido suma 0.</p>
+        <div class="rules-grid">
+          <div class="rule-card"><strong>5</strong><span>Resultado en 90 minutos: gana Equipo A, empate o gana Equipo B.</span></div>
+          <div class="rule-card"><strong>3</strong><span>Clasificado oficial del partido.</span></div>
+          <div class="rule-card"><strong>2</strong><span>Via de clasificacion: 90 minutos, suplementario o penales.</span></div>
+          <div class="rule-card"><strong>4</strong><span>Marcador exacto del partido. En penales no se cuenta la tanda.</span></div>
+          <div class="rule-card"><strong>2</strong><span>Diferencia de goles del marcador elegido.</span></div>
+          <div class="rule-card"><strong>1</strong><span>Goles exactos del Equipo A.</span></div>
+          <div class="rule-card"><strong>1</strong><span>Goles exactos del Equipo B.</span></div>
+          <div class="rule-card"><strong>18</strong><span>Maximo posible por partido si se aciertan todos los criterios.</span></div>
+        </div>
+        <p class="hint" style="margin-top: 16px;">Nota: octavos queda como antecedente cerrado en la tabla general. El detalle de octavos se muestra para trazabilidad y auditoria historica.</p>
       </section>
     </main>
 
@@ -557,6 +776,8 @@
       let dashboard = null;
       let activeBaseline = BASELINE;
       let activePreviousMatches = PREVIOUS_MATCHES;
+      let activeRound16Trace = [];
+      let traceAuthority = "Octavos se mantiene como base cerrada; el detalle publicado es trazabilidad reconstruida.";
 
       function normalize(value) {
         return String(value || "")
@@ -647,6 +868,12 @@
         return parseSimpleCsv(await response.text());
       }
 
+      async function loadJson(path) {
+        const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`No se pudo leer ${path}`);
+        return response.json();
+      }
+
       function baselineFromCsv(rows) {
         if (rows.length < 2) return BASELINE;
         const baseline = {};
@@ -670,6 +897,27 @@
           label: `${displayName(row[1])} ${row[3]}-${row[4]} ${displayName(row[2])}`,
           qualifier: row[6],
           method: normalizeMethod(row[5])
+        }));
+      }
+
+      function round16TraceFromPayload(payload) {
+        if (payload && payload.authority) traceAuthority = payload.authority;
+        return ((payload && payload.rows) || []).map((row) => ({
+          phase: "8vos",
+          matchId: row.matchId,
+          participant: canonicalParticipant(row.participant),
+          teamA: row.teamA,
+          teamB: row.teamB,
+          prediction: row.prediction || "Sin envio",
+          qualifier: row.qualifier || "Sin envio",
+          method: row.method || "Sin envio",
+          result: row.result || "Pendiente",
+          officialQualifier: row.officialQualifier || "Pendiente",
+          officialMethod: row.officialMethod || "Pendiente",
+          points: { ...emptyScore(), ...(row.points || {}) },
+          correctedPoints: { ...emptyScore(), ...(row.correctedPoints || {}) },
+          note: row.status && row.status !== "OK" ? row.status : (row.note || "Base historica 8vos"),
+          source: "8vos historico"
         }));
       }
 
@@ -748,6 +996,21 @@
 
       function emptyScore() {
         return { result90: 0, qualifier: 0, method: 0, exact: 0, diff: 0, goalsA: 0, goalsB: 0, total: 0 };
+      }
+
+      function scoreNote(prediction, result, score) {
+        if (!prediction) return "Sin respuesta";
+        if (!result || !result.confirmed) return "Resultado pendiente";
+        if (prediction.qualifier !== result.qualifier) return "No acerto clasificado";
+        return score.total > 0 ? "OK" : "Sin puntos";
+      }
+
+      function scoreTotal(points) {
+        return Number(points && points.total ? points.total : 0);
+      }
+
+      function matchName(row) {
+        return `${displayName(row.teamA)} vs ${displayName(row.teamB)}`;
       }
 
       function latestPredictions(rows) {
@@ -929,7 +1192,67 @@
           };
         });
 
-        return { standings, matchInsights, predictionsByParticipant, results };
+        const quarterTrace = PARTICIPANTS.flatMap((name) => {
+          const predictions = predictionsByParticipant.get(name) || [];
+          return MATCHES.map((match) => {
+            const prediction = predictions.find((item) => item.matchId === match.id);
+            const result = results.get(match.id);
+            const score = prediction ? scorePrediction(prediction, result) : emptyScore();
+            return {
+              phase: "4tos",
+              matchId: match.id,
+              participant: name,
+              teamA: match.teamA,
+              teamB: match.teamB,
+              prediction: prediction ? `${prediction.goalsA}-${prediction.goalsB}` : "Sin envio",
+              qualifier: prediction ? prediction.qualifier : "Sin envio",
+              method: prediction ? prediction.method : "Sin envio",
+              result: result && result.confirmed ? `${result.goalsA}-${result.goalsB}` : "Pendiente",
+              officialQualifier: result && result.confirmed ? result.qualifier : "Pendiente",
+              officialMethod: result && result.confirmed ? result.method : "Pendiente",
+              points: score,
+              note: scoreNote(prediction, result, score),
+              source: "Google Forms + ESPN"
+            };
+          });
+        });
+
+        const allTraceRows = [...activeRound16Trace, ...quarterTrace];
+        const matchSummary = buildMatchSummaryRows(allTraceRows);
+
+        return { standings, matchInsights, predictionsByParticipant, results, quarterTrace, allTraceRows, matchSummary };
+      }
+
+      function buildMatchSummaryRows(rows) {
+        const grouped = new Map();
+        rows.forEach((row) => {
+          const key = `${row.phase}-${row.matchId}`;
+          if (!grouped.has(key)) {
+            grouped.set(key, {
+              phase: row.phase,
+              matchId: row.matchId,
+              teamA: row.teamA,
+              teamB: row.teamB,
+              result: row.result,
+              officialQualifier: row.officialQualifier,
+              officialMethod: row.officialMethod,
+              bets: 0,
+              withPoints: 0,
+              exacts: 0,
+              points: 0,
+              source: row.source
+            });
+          }
+          const summary = grouped.get(key);
+          if (row.prediction !== "Sin envio") summary.bets += 1;
+          if (scoreTotal(row.points) > 0) summary.withPoints += 1;
+          if (row.points && row.points.exact > 0) summary.exacts += 1;
+          summary.points += scoreTotal(row.points);
+        });
+        return Array.from(grouped.values()).sort((a, b) => {
+          const phaseOrder = { "8vos": 1, "4tos": 2, "Semifinal": 3 };
+          return (phaseOrder[a.phase] || 9) - (phaseOrder[b.phase] || 9) || a.matchId.localeCompare(b.matchId);
+        });
       }
 
       function resultLabel(match) {
@@ -941,7 +1264,8 @@
         dashboard = data;
         const now = new Date();
         document.getElementById("lastUpdated").textContent = new Intl.DateTimeFormat("es-PE", { dateStyle: "medium", timeStyle: "short" }).format(now);
-        document.getElementById("phaseStatus").textContent = now <= new Date("2026-07-09T10:00:00-05:00") ? "Abierta" : (data.matchInsights.some((m) => m.result && m.result.confirmed) ? "En juego" : "Cerrada");
+        const completedQuarterMatches = data.matchInsights.filter((m) => m.result && m.result.confirmed).length;
+        document.getElementById("phaseStatus").textContent = completedQuarterMatches === MATCHES.length ? "Cuartos cerrados" : (completedQuarterMatches > 0 ? "Cuartos en juego" : "Cuartos pendientes");
 
         const leader = data.standings[0];
         document.getElementById("metricLeader").textContent = displayName(leader.name);
@@ -952,7 +1276,7 @@
         const qualifier = data.standings.find((row) => row.qualifiers > 0);
         document.getElementById("metricQualifier").textContent = qualifier ? displayName(qualifier.name) : "N/D";
         document.getElementById("metricQualifierDetail").textContent = `${qualifier ? qualifier.qualifiers : 0} aciertos`;
-        const bestMatch = data.matchInsights.slice().sort((a, b) => b.points - a.points)[0];
+        const bestMatch = data.matchSummary.slice().sort((a, b) => b.points - a.points)[0];
         document.getElementById("metricMatch").textContent = bestMatch ? `${displayName(bestMatch.teamA)} vs ${displayName(bestMatch.teamB)}` : "N/D";
         document.getElementById("metricMatchDetail").textContent = `${bestMatch ? bestMatch.points : 0} pts repartidos`;
 
@@ -967,6 +1291,21 @@
             <td class="num">${row.qualifiers}</td>
             <td class="num">${row.methods}</td>
             <td class="num">${row.unanswered}</td>
+          </tr>
+        `).join("");
+
+        document.getElementById("traceNotice").textContent = traceAuthority;
+        document.getElementById("matchSummaryBody").innerHTML = data.matchSummary.map((match) => `
+          <tr>
+            <td>${match.phase}</td>
+            <td>${match.matchId} - ${displayName(match.teamA)} vs ${displayName(match.teamB)}</td>
+            <td class="score-cell">${match.result}</td>
+            <td>${displayName(match.officialQualifier)} <span class="label">(${match.officialMethod})</span></td>
+            <td class="num">${match.bets}</td>
+            <td class="num">${match.withPoints}</td>
+            <td class="num">${match.exacts}</td>
+            <td class="num points">${match.points}</td>
+            <td class="muted-cell">${match.source}</td>
           </tr>
         `).join("");
 
@@ -1004,6 +1343,12 @@
           </article>
         `).join("");
 
+        const matchSelect = document.getElementById("matchSelect");
+        const currentMatch = matchSelect.value || (data.matchSummary[0] ? `${data.matchSummary[0].phase}-${data.matchSummary[0].matchId}` : "");
+        matchSelect.innerHTML = data.matchSummary.map((match) => `<option value="${match.phase}-${match.matchId}">${match.phase} - ${match.matchId}: ${displayName(match.teamA)} vs ${displayName(match.teamB)}</option>`).join("");
+        matchSelect.value = data.matchSummary.some((match) => `${match.phase}-${match.matchId}` === currentMatch) ? currentMatch : (data.matchSummary[0] ? `${data.matchSummary[0].phase}-${data.matchSummary[0].matchId}` : "");
+        renderMatchTracker(matchSelect.value);
+
         const select = document.getElementById("participantSelect");
         const current = select.value || data.standings[0].name;
         select.innerHTML = data.standings.map((row) => `<option value="${row.name}">${displayName(row.name)}</option>`).join("");
@@ -1011,24 +1356,52 @@
         renderParticipant(select.value);
       }
 
+      function renderMatchTracker(value) {
+        if (!dashboard) return;
+        const [phase, matchId] = String(value || "").split("-");
+        const rows = dashboard.allTraceRows
+          .filter((row) => row.phase === phase && row.matchId === matchId)
+          .sort((a, b) => scoreTotal(b.points) - scoreTotal(a.points) || a.participant.localeCompare(b.participant));
+        document.getElementById("matchTrackerBody").innerHTML = rows.map((row) => `
+          <tr>
+            <td>${displayName(row.participant)}</td>
+            <td class="score-cell">${row.prediction}</td>
+            <td>${displayName(row.qualifier)}</td>
+            <td>${row.method}</td>
+            <td>${row.result} <span class="label">${displayName(row.officialQualifier)} / ${row.officialMethod}</span></td>
+            <td class="num">${row.points.result90}</td>
+            <td class="num">${row.points.qualifier}</td>
+            <td class="num">${row.points.method}</td>
+            <td class="num">${row.points.exact}</td>
+            <td class="num">${row.points.diff}</td>
+            <td class="num">${row.points.goalsA}</td>
+            <td class="num">${row.points.goalsB}</td>
+            <td class="num points">${row.points.total}</td>
+            <td class="muted-cell">${row.note}</td>
+          </tr>
+        `).join("");
+      }
+
       function renderParticipant(name) {
         if (!dashboard) return;
-        const predictions = dashboard.predictionsByParticipant.get(name) || [];
-        document.getElementById("participantBody").innerHTML = MATCHES.map((match) => {
-          const prediction = predictions.find((item) => item.matchId === match.id);
-          const result = dashboard.results.get(match.id);
-          const score = prediction ? scorePrediction(prediction, result) : emptyScore();
-          return `
-            <tr>
-              <td>${displayName(match.teamA)} vs ${displayName(match.teamB)}</td>
-              <td>${prediction ? `${prediction.goalsA}-${prediction.goalsB}` : "Sin envio"}</td>
-              <td>${prediction ? displayName(prediction.qualifier) : "Sin envio"}</td>
-              <td>${prediction ? prediction.method : "Sin envio"}</td>
-              <td>${result && result.confirmed ? `${result.goalsA}-${result.goalsB}` : "Pendiente"}</td>
-              <td class="num points">${score.total}</td>
-            </tr>
-          `;
-        }).join("");
+        const rows = dashboard.allTraceRows
+          .filter((row) => row.participant === name)
+          .sort((a, b) => {
+            const phaseOrder = { "8vos": 1, "4tos": 2 };
+            return (phaseOrder[a.phase] || 9) - (phaseOrder[b.phase] || 9) || a.matchId.localeCompare(b.matchId);
+          });
+        document.getElementById("participantBody").innerHTML = rows.map((row) => `
+          <tr>
+            <td>${row.phase}</td>
+            <td>${row.matchId} - ${matchName(row)}</td>
+            <td class="score-cell">${row.prediction}</td>
+            <td>${displayName(row.qualifier)}</td>
+            <td>${row.method}</td>
+            <td>${row.result} <span class="label">${displayName(row.officialQualifier)} / ${row.officialMethod}</span></td>
+            <td class="num points">${row.points.total}</td>
+            <td class="muted-cell">${row.note}</td>
+          </tr>
+        `).join("");
       }
 
       async function refresh() {
@@ -1038,15 +1411,19 @@
           const responsesTable = await loadGoogleTable({ gid: "0" }, "__kinelaResponses");
           let espnResults = new Map();
           try {
-            const [baselineRows, previousRows] = await Promise.all([
+            const [baselineRows, previousRows, round16Payload] = await Promise.all([
               loadCsvRows("data/octavos_acumulado.csv"),
-              loadCsvRows("data/octavos_partidos.csv")
+              loadCsvRows("data/octavos_partidos.csv"),
+              loadJson("data/octavos_detalle.json")
             ]);
             activeBaseline = baselineFromCsv(baselineRows);
             activePreviousMatches = previousMatchesFromCsv(previousRows);
+            activeRound16Trace = round16TraceFromPayload(round16Payload);
           } catch (error) {
             activeBaseline = BASELINE;
             activePreviousMatches = PREVIOUS_MATCHES;
+            activeRound16Trace = [];
+            traceAuthority = "Octavos se mantiene como base cerrada; no se pudo cargar el detalle historico.";
           }
           try {
             espnResults = await loadEpsnResults();
@@ -1064,6 +1441,10 @@
 
       document.getElementById("participantSelect").addEventListener("change", (event) => {
         renderParticipant(event.target.value);
+      });
+
+      document.getElementById("matchSelect").addEventListener("change", (event) => {
+        renderMatchTracker(event.target.value);
       });
 
       refresh();
