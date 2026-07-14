@@ -539,6 +539,7 @@
                 <th class="num">Total</th>
                 <th class="num">Base 8vos</th>
                 <th class="num">Cuartos</th>
+                <th class="num">Semis</th>
                 <th class="num">Exactos</th>
                 <th class="num">Clasificados</th>
                 <th class="num">Vias</th>
@@ -553,8 +554,8 @@
       <section id="resumen-partidos">
         <div class="section-head">
           <div>
-            <h2>Puntuacion por partido</h2>
-            <p class="hint">Resumen de puntos repartidos, exactos y participantes que sumaron en cada encuentro.</p>
+            <h2>Todos los partidos y puntuacion</h2>
+            <p class="hint">Octavos, cuartos y semifinales con resultado, clasificado, fuente y puntos repartidos.</p>
           </div>
           <div class="notice" id="traceNotice">Octavos se mantiene como base cerrada; el detalle publicado es trazabilidad reconstruida.</div>
         </div>
@@ -586,7 +587,7 @@
 
       <section>
         <h2>Semifinales</h2>
-        <p class="hint">Partidos ya definidos para la siguiente fase.</p>
+        <p class="hint">Resultados oficiales de semifinal y partidos pendientes segun ESPN.</p>
         <div class="previous-grid" id="nextMatchesGrid"></div>
       </section>
 
@@ -726,6 +727,14 @@
         { id: "QF3", order: 3, teamA: "Noruega", teamB: "Inglaterra", q: 11, m: 12, a: 13, b: 14 },
         { id: "QF4", order: 4, teamA: "Argentina", teamB: "Suiza", q: 15, m: 16, a: 17, b: 18 }
       ];
+      const SEMIFINAL_MATCHES = [
+        { id: "SF1", order: 5, phase: "Semifinal", teamA: "Francia", teamB: "Espana", date: "14/07/2026 2:00 p. m.", source: "ESPN" },
+        { id: "SF2", order: 6, phase: "Semifinal", teamA: "Inglaterra", teamB: "Argentina", date: "15/07/2026 2:00 p. m.", source: "ESPN" }
+      ];
+      const OFFICIAL_MATCHES = [...MATCHES, ...SEMIFINAL_MATCHES];
+      const VERIFIED_RESULTS = [
+        { matchId: "SF1", goalsA: 0, goalsB: 2, method: "90 minutos", qualifier: "Espana", confirmed: true, source: "ESPN verificado 14/07/2026" }
+      ];
       const POINTS = {
         result90: 5,
         qualifier: 3,
@@ -777,7 +786,7 @@
       let activeBaseline = BASELINE;
       let activePreviousMatches = PREVIOUS_MATCHES;
       let activeRound16Trace = [];
-      let traceAuthority = "Octavos se mantiene como base cerrada; el detalle publicado es trazabilidad reconstruida.";
+      let traceAuthority = "Octavos se mantiene como base cerrada; semifinales se muestran con resultado ESPN y sin puntos hasta que existan apuestas cargadas.";
 
       function normalize(value) {
         return String(value || "")
@@ -901,7 +910,7 @@
       }
 
       function round16TraceFromPayload(payload) {
-        if (payload && payload.authority) traceAuthority = payload.authority;
+        if (payload && payload.authority) traceAuthority = `${payload.authority} Semifinales se muestran con resultado ESPN y sin puntos hasta que existan apuestas cargadas.`;
         return ((payload && payload.rows) || []).map((row) => ({
           phase: "8vos",
           matchId: row.matchId,
@@ -1051,7 +1060,7 @@
 
         const results = new Map();
         rows.slice(1).forEach((row) => {
-          const match = MATCHES.find((item) => normalize(row[partido]) === normalize(item.id) || (normalize(row[partido]).includes(normalize(item.teamA)) && normalize(row[partido]).includes(normalize(item.teamB))));
+          const match = OFFICIAL_MATCHES.find((item) => normalize(row[partido]) === normalize(item.id) || (normalize(row[partido]).includes(normalize(item.teamA)) && normalize(row[partido]).includes(normalize(item.teamB))));
           if (!match) return;
           const status = normalize(row[estado] || "finalizado");
           results.set(match.id, {
@@ -1105,9 +1114,9 @@
 
         const payload = await response.json();
         const events = Array.isArray(payload.events) ? payload.events : [];
-        const results = new Map();
+        const results = new Map(VERIFIED_RESULTS.map((result) => [result.matchId, result]));
 
-        MATCHES.forEach((match) => {
+        OFFICIAL_MATCHES.forEach((match) => {
           const event = events.find((item) => espnEventMatches(item, match));
           if (!event || !espnCompleted(event)) return;
 
@@ -1138,6 +1147,7 @@
             name,
             basePoints: base.points,
             qfPoints: 0,
+            sfPoints: 0,
             points: base.points,
             exact: base.exact,
             qualifiers: base.qualifiers,
@@ -1217,10 +1227,41 @@
           });
         });
 
-        const allTraceRows = [...activeRound16Trace, ...quarterTrace];
+        const semifinalTrace = PARTICIPANTS.flatMap((name) => SEMIFINAL_MATCHES.map((match) => {
+          const result = results.get(match.id);
+          return {
+            phase: "Semifinal",
+            matchId: match.id,
+            participant: name,
+            teamA: match.teamA,
+            teamB: match.teamB,
+            prediction: "Sin apuesta cargada",
+            qualifier: "Sin apuesta cargada",
+            method: "Sin apuesta cargada",
+            result: result && result.confirmed ? `${result.goalsA}-${result.goalsB}` : "Pendiente",
+            officialQualifier: result && result.confirmed ? result.qualifier : "Pendiente",
+            officialMethod: result && result.confirmed ? result.method : "Pendiente",
+            points: emptyScore(),
+            note: result && result.confirmed ? "Sin apuesta de semifinal cargada" : "Resultado pendiente",
+            source: "ESPN / sin apuestas cargadas"
+          };
+        }));
+
+        const semifinalInsights = SEMIFINAL_MATCHES.map((match) => ({
+          ...match,
+          result: results.get(match.id),
+          picksA: 0,
+          picksB: 0,
+          picksDraw: 0,
+          points: 0,
+          exactScorers: [],
+          common: "Sin apuestas cargadas"
+        }));
+
+        const allTraceRows = [...activeRound16Trace, ...quarterTrace, ...semifinalTrace];
         const matchSummary = buildMatchSummaryRows(allTraceRows);
 
-        return { standings, matchInsights, predictionsByParticipant, results, quarterTrace, allTraceRows, matchSummary };
+        return { standings, matchInsights, semifinalInsights, predictionsByParticipant, results, quarterTrace, semifinalTrace, allTraceRows, matchSummary };
       }
 
       function buildMatchSummaryRows(rows) {
@@ -1264,12 +1305,12 @@
         dashboard = data;
         const now = new Date();
         document.getElementById("lastUpdated").textContent = new Intl.DateTimeFormat("es-PE", { dateStyle: "medium", timeStyle: "short" }).format(now);
-        const completedQuarterMatches = data.matchInsights.filter((m) => m.result && m.result.confirmed).length;
-        document.getElementById("phaseStatus").textContent = completedQuarterMatches === MATCHES.length ? "Cuartos cerrados" : (completedQuarterMatches > 0 ? "Cuartos en juego" : "Cuartos pendientes");
+        const completedSemifinalMatches = data.semifinalInsights.filter((m) => m.result && m.result.confirmed).length;
+        document.getElementById("phaseStatus").textContent = completedSemifinalMatches === SEMIFINAL_MATCHES.length ? "Semifinales cerradas" : (completedSemifinalMatches > 0 ? "Semifinales en juego" : "Semifinales pendientes");
 
         const leader = data.standings[0];
         document.getElementById("metricLeader").textContent = displayName(leader.name);
-        document.getElementById("metricLeaderDetail").textContent = `${leader.points} pts (${leader.basePoints} base + ${leader.qfPoints} cuartos)`;
+        document.getElementById("metricLeaderDetail").textContent = `${leader.points} pts (${leader.basePoints} base + ${leader.qfPoints} cuartos + ${leader.sfPoints} semis)`;
         const exact = data.standings.find((row) => row.exact > 0);
         document.getElementById("metricExact").textContent = exact ? displayName(exact.name) : "N/D";
         document.getElementById("metricExactDetail").textContent = `${exact ? exact.exact : 0} exactos`;
@@ -1287,6 +1328,7 @@
             <td class="num points">${row.points}</td>
             <td class="num">${row.basePoints}</td>
             <td class="num">${row.qfPoints}</td>
+            <td class="num">${row.sfPoints}</td>
             <td class="num">${row.exact}</td>
             <td class="num">${row.qualifiers}</td>
             <td class="num">${row.methods}</td>
@@ -1329,10 +1371,12 @@
           </article>
         `).join("");
 
-        document.getElementById("nextMatchesGrid").innerHTML = NEXT_MATCHES.map((match) => `
+        document.getElementById("nextMatchesGrid").innerHTML = data.semifinalInsights.map((match) => `
           <article class="previous-card">
-            <strong>${match.id} - ${match.label}</strong>
+            <strong>${match.id} - ${displayName(match.teamA)} vs ${displayName(match.teamB)}</strong>
             <div class="label">${match.date} - Fuente ${match.source}</div>
+            <div class="value">${match.result && match.result.confirmed ? `${match.result.goalsA}-${match.result.goalsB}` : "Pendiente"}</div>
+            <div class="detail">${match.result && match.result.confirmed ? `Clasifica ${displayName(match.result.qualifier)} - ${match.result.method}` : "Resultado pendiente"}</div>
           </article>
         `).join("");
 
@@ -1387,7 +1431,7 @@
         const rows = dashboard.allTraceRows
           .filter((row) => row.participant === name)
           .sort((a, b) => {
-            const phaseOrder = { "8vos": 1, "4tos": 2 };
+            const phaseOrder = { "8vos": 1, "4tos": 2, "Semifinal": 3 };
             return (phaseOrder[a.phase] || 9) - (phaseOrder[b.phase] || 9) || a.matchId.localeCompare(b.matchId);
           });
         document.getElementById("participantBody").innerHTML = rows.map((row) => `
@@ -1423,12 +1467,12 @@
             activeBaseline = BASELINE;
             activePreviousMatches = PREVIOUS_MATCHES;
             activeRound16Trace = [];
-            traceAuthority = "Octavos se mantiene como base cerrada; no se pudo cargar el detalle historico.";
+            traceAuthority = "Octavos se mantiene como base cerrada; no se pudo cargar el detalle historico. Semifinales se muestran con resultado ESPN y sin puntos hasta que existan apuestas cargadas.";
           }
           try {
             espnResults = await loadEpsnResults();
           } catch (error) {
-            espnResults = new Map();
+            espnResults = new Map(VERIFIED_RESULTS.map((result) => [result.matchId, result]));
           }
           const responsesRows = tableToRows(responsesTable);
           const predictions = latestPredictions(responsesRows);
