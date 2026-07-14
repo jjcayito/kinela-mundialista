@@ -1025,7 +1025,12 @@
 
       function latestPredictions(rows, matches = MATCHES) {
         const latest = new Map();
-        rows.slice(1).forEach((row, index) => {
+        const hasHeader = rows.length > 0 && (
+          normalize(rows[0][0]).includes("marca temporal") ||
+          normalize(rows[0][2]).includes("nombres")
+        );
+        const dataRows = hasHeader ? rows.slice(1) : rows;
+        dataRows.forEach((row, index) => {
           const name = canonicalParticipant(row[2]);
           if (!name) return;
           const submitted = parseDate(row[0], index);
