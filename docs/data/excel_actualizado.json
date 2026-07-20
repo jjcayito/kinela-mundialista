@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-07-20T15:05:00.000Z",
+  "updated_at": "2026-07-20T15:05:56.676Z",
   "standings_count": 22,
   "leader": "Jean",
   "leader_points": 122,
-  "fingerprint": "eac77703891e3c8871e039141f4b00d013b3deb54f11d4142a99b19c5e23cdf8",
+  "fingerprint": "2db5f8475d3962b6457e5a1bf4a890ccca64551073cf2afc5e57c5354958b9ef",
   "closed": true,
   "audit_workbook": "kinela_actualizada.xlsx",
-  "note": "Total publico conserva la base original de 8vos y suma cuartos, semifinales, tercer puesto y final."
+  "note": "Excel completo del torneo con 8vos como base original, detalle de todas las fases y respuestas originales."
 }
