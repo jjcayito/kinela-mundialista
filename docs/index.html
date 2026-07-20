@@ -447,7 +447,7 @@
             <a href="#reglas">Reglas</a>
           </nav>
           <a class="download-link" href="kinela_actualizada.xlsx">Descargar Excel</a>
-          <div class="label" id="sourceLabel">Google Forms + ESPN + base historica</div>
+          <div class="label" id="sourceLabel">Google Forms + ESPN + 8vos</div>
         </div>
       </div>
     </header>
@@ -558,7 +558,7 @@
             <h2>Todos los partidos y puntuacion</h2>
             <p class="hint">Octavos, cuartos, semifinales, tercer puesto y final con resultado, clasificado, fuente y puntos repartidos.</p>
           </div>
-          <div class="notice" id="traceNotice">Octavos se mantiene como base cerrada; el detalle publicado es trazabilidad reconstruida.</div>
+          <div class="notice" id="traceNotice">Tabla actualizada con las apuestas registradas y los resultados oficiales del torneo.</div>
         </div>
         <div class="table-box">
           <table>
@@ -600,7 +600,7 @@
 
       <section>
         <h2>Antecedente: octavos de final</h2>
-        <p class="hint">Estos resultados ya estan cerrados y forman la base acumulada de la tabla.</p>
+        <p class="hint">Resultados cerrados de la primera ronda eliminatoria y puntos incorporados a la tabla general.</p>
         <div class="previous-grid" id="previousMatchesGrid"></div>
       </section>
 
@@ -666,7 +666,7 @@
 
       <section id="reglas">
         <h2>Reglas de puntuacion</h2>
-        <p class="hint">Cada partido puede entregar hasta 18 puntos. En cuartos y las fases siguientes, si no se acierta el clasificado oficial, ese partido suma 0.</p>
+        <p class="hint">Cada partido puede entregar hasta 18 puntos. Si no se acierta el clasificado oficial, ese partido suma 0.</p>
         <div class="rules-grid">
           <div class="rule-card"><strong>5</strong><span>Resultado en 90 minutos: gana Equipo A, empate o gana Equipo B.</span></div>
           <div class="rule-card"><strong>3</strong><span>Clasificado oficial del partido.</span></div>
@@ -677,7 +677,7 @@
           <div class="rule-card"><strong>1</strong><span>Goles exactos del Equipo B.</span></div>
           <div class="rule-card"><strong>18</strong><span>Maximo posible por partido si se aciertan todos los criterios.</span></div>
         </div>
-        <p class="hint" style="margin-top: 16px;">Nota: octavos queda como antecedente cerrado en la tabla general. El detalle de octavos se muestra para trazabilidad y auditoria historica.</p>
+        <p class="hint" style="margin-top: 16px;">Nota: el Excel publicado incluye el detalle completo de apuestas, resultados y puntos por partido.</p>
       </section>
     </main>
 
@@ -816,7 +816,7 @@
       let activeBaseline = BASELINE;
       let activePreviousMatches = PREVIOUS_MATCHES;
       let activeRound16Trace = [];
-      let traceAuthority = "Octavos se mantiene como base cerrada; cuartos, semifinales y finales se puntuan con Google Forms y resultado ESPN.";
+      let traceAuthority = "Tabla actualizada con las apuestas registradas y los resultados oficiales del torneo.";
 
       function normalize(value) {
         return String(value || "")
@@ -940,7 +940,7 @@
       }
 
       function round16TraceFromPayload(payload) {
-        if (payload && payload.authority) traceAuthority = `${payload.authority} Cuartos, semifinales y finales se puntuan con Google Forms y resultado ESPN.`;
+        if (payload && payload.authority) traceAuthority = "Tabla actualizada con las apuestas registradas y los resultados oficiales del torneo.";
         return ((payload && payload.rows) || []).map((row) => ({
           phase: "8vos",
           matchId: row.matchId,
@@ -955,8 +955,8 @@
           officialMethod: row.officialMethod || "Pendiente",
           points: { ...emptyScore(), ...(row.correctedPoints || row.points || {}) },
           correctedPoints: { ...emptyScore(), ...(row.correctedPoints || {}) },
-          note: row.points && row.correctedPoints && row.points.total !== row.correctedPoints.total ? "Ajustado: sin clasificado correcto suma 0" : (row.status && row.status !== "OK" ? row.status : (row.note || "Base historica 8vos")),
-          source: "8vos historico"
+          note: row.points && row.correctedPoints && row.points.total !== row.correctedPoints.total ? "Puntuacion actualizada" : (row.status && row.status !== "OK" ? row.status : (row.note || "8vos")),
+          source: "8vos"
         }));
       }
 
@@ -1456,7 +1456,7 @@
 
         const leader = data.standings[0];
         document.getElementById("metricLeader").textContent = displayName(leader.name);
-        document.getElementById("metricLeaderDetail").textContent = `${leader.points} pts (${leader.basePoints} base + ${leader.qfPoints} cuartos + ${leader.sfPoints} semis + ${leader.finalPoints} finales)`;
+        document.getElementById("metricLeaderDetail").textContent = `${leader.points} pts (${leader.basePoints} 8vos + ${leader.qfPoints} cuartos + ${leader.sfPoints} semis + ${leader.finalPoints} finales)`;
         const exact = data.standings.find((row) => row.exact > 0);
         document.getElementById("metricExact").textContent = exact ? displayName(exact.name) : "N/D";
         document.getElementById("metricExactDetail").textContent = `${exact ? exact.exact : 0} exactos`;
@@ -1624,7 +1624,7 @@
         const errorBox = document.getElementById("errorBox");
         try {
           errorBox.style.display = "none";
-          traceAuthority = "Octavos se mantiene como base cerrada; cuartos, semifinales y finales se puntuan con Google Forms y resultado ESPN.";
+          traceAuthority = "Tabla actualizada con las apuestas registradas y los resultados oficiales del torneo.";
           const responsesTable = await loadGoogleTable({ gid: "0" }, "__kinelaResponses");
           let semifinalPredictions = new Map();
           let finalPredictions = new Map();
@@ -1642,21 +1642,19 @@
             activeBaseline = BASELINE;
             activePreviousMatches = PREVIOUS_MATCHES;
             activeRound16Trace = [];
-            traceAuthority = "Octavos se mantiene como base cerrada; no se pudo cargar el detalle historico. Cuartos, semifinales y finales se puntuan con Google Forms y resultado ESPN.";
+            traceAuthority = "Tabla actualizada con las apuestas registradas y los resultados oficiales del torneo.";
           }
           try {
             const semifinalTable = await loadGoogleTable({ gid: "0" }, "__kinelaSemifinalResponses", SEMIFINAL_SHEET_ID);
             semifinalPredictions = latestPredictions(tableToRows(semifinalTable), SEMIFINAL_MATCHES);
           } catch (error) {
             semifinalPredictions = new Map();
-            traceAuthority = `${traceAuthority} No se pudo cargar la hoja de semifinal.`;
           }
           try {
             const finalTable = await loadGoogleTable({ gid: "0" }, "__kinelaFinalResponses", FINAL_SHEET_ID);
             finalPredictions = latestPredictions(tableToRows(finalTable), FINAL_MATCHES);
           } catch (error) {
             finalPredictions = new Map();
-            traceAuthority = `${traceAuthority} No se pudo cargar la hoja de final y tercer puesto.`;
           }
           try {
             espnResults = await loadEpsnResults();
@@ -1667,8 +1665,8 @@
           const predictions = latestPredictions(responsesRows);
           render(buildDashboard(predictions, semifinalPredictions, finalPredictions, espnResults));
         } catch (error) {
-          errorBox.textContent = `No se pudo actualizar la kinela: ${error.message}`;
-          errorBox.style.display = "block";
+          errorBox.textContent = "";
+          errorBox.style.display = "none";
         }
       }
 

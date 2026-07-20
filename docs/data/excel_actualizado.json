@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-07-20T03:20:43.035Z",
+  "updated_at": "2026-07-20T15:05:00.000Z",
   "standings_count": 22,
   "leader": "Jean",
   "leader_points": 122,
   "fingerprint": "eac77703891e3c8871e039141f4b00d013b3deb54f11d4142a99b19c5e23cdf8",
   "closed": true,
-  "audit_workbook": "kinela_auditoria_completa_final_2026-07-19.xlsx",
-  "note": "Total publico usa 8vos cerrado mas cuartos, semifinales, tercer puesto y final recalculados con regla de clasificado correcto."
+  "audit_workbook": "kinela_actualizada.xlsx",
+  "note": "Total publico conserva la base original de 8vos y suma cuartos, semifinales, tercer puesto y final."
 }
