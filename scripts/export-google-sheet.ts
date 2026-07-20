@@ -28,14 +28,31 @@ function readPreviousFingerprint(path: string) {
   }
 }
 
+function readStatus(path: string) {
+  if (!existsSync(path)) return null;
+
+  try {
+    return JSON.parse(readFileSync(path, "utf8")) as { closed?: boolean };
+  } catch {
+    return null;
+  }
+}
+
 async function main() {
   const docsDir = join(process.cwd(), "docs");
   const dataDir = join(docsDir, "data");
   mkdirSync(dataDir, { recursive: true });
 
-  const dashboard = await buildGoogleSheetDashboardData();
   const excelPath = join(docsDir, "kinela_actualizada.xlsx");
   const statusPath = join(dataDir, "excel_actualizado.json");
+  const previousStatus = readStatus(statusPath);
+
+  if (previousStatus?.closed) {
+    console.log("Torneo cerrado. Se conserva el Excel final de auditoria.");
+    return;
+  }
+
+  const dashboard = await buildGoogleSheetDashboardData();
   const fingerprint = fingerprintDashboard(dashboard);
   const previousFingerprint = readPreviousFingerprint(statusPath);
 
